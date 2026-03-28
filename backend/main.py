@@ -54,9 +54,10 @@ app.include_router(advanced_orders.router, prefix="/orders", tags=["Órdenes Ava
 async def root():
     return {
         "name": "Open Trader",
-        "version": "0.2.1",
+        "version": "0.3.0",
         "status": "running",
         "mode": "paper_trading",
+        "features": ["multi-dex", "advanced-orders", "realtime-charts"],
         "docs": "/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
         "dashboard": "/dashboard/"
     }
