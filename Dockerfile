@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
+# Force rebuild cache v0.3.1
+RUN echo "Build version 0.3.1" > /tmp/build_version
+
 # Stage 2: Production
 FROM python:3.11-slim as production
 

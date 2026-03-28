@@ -18,7 +18,15 @@ async def lifespan(app: FastAPI):
     
     # Initialize database
     await init_db()
-    print("🚀 Open Trader iniciado")
+    
+    # Log available routes for debugging
+    print("🚀 Open Trader v0.3.1 iniciado")
+    print("📡 Routes loaded:")
+    for route in app.routes:
+        if hasattr(route, 'methods'):
+            methods = ','.join(route.methods)
+            print(f"  {methods} {route.path}")
+    
     yield
     print("👋 Open Trader detenido")
 
@@ -67,7 +75,21 @@ async def root():
 async def version():
     """Get current API version"""
     return {
-        "version": "0.2.0",
+        "version": "0.3.1",
         "release_date": "2024-03-28",
         "changelog": "https://github.com/pauvalls/open-trader/blob/main/CHANGELOG.md"
     }
+
+
+@app.get("/routes")
+async def list_routes():
+    """Debug: List all available routes"""
+    routes = []
+    for route in app.routes:
+        if hasattr(route, 'methods') and hasattr(route, 'path'):
+            routes.append({
+                "path": route.path,
+                "methods": list(route.methods),
+                "name": route.name if hasattr(route, 'name') else None
+            })
+    return {"routes": routes, "count": len(routes)}
