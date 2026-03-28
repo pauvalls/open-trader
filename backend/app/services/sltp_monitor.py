@@ -14,7 +14,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db, PaperPosition, PaperOrder, PaperAccount
+from app.database import get_db, PaperPosition, PaperOrder, PaperAccount, async_session
 from app.services.market_multi import MultiMarketService
 from app.services.alerts import AlertService
 
@@ -62,7 +62,7 @@ class SLTPMonitorService:
     
     async def _check_positions(self):
         """Check all open positions for SL/TP triggers"""
-        async with get_db() as db:
+        async with async_session() as db:
             # Get all open positions with SL/TP set
             result = await db.execute(
                 select(PaperPosition).where(

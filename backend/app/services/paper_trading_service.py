@@ -12,7 +12,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 
-from app.database import get_db, PaperAccount, PaperOrder, PaperPosition
+from app.database import async_session, PaperAccount, PaperOrder, PaperPosition
 from app.services.market import MarketService
 from app.services.alerts import AlertService
 
@@ -29,7 +29,7 @@ class PaperTradingService:
         name: Optional[str] = None
     ) -> Dict[str, Any]:
         """Create a new paper trading account"""
-        async with get_db() as db:
+        async with async_session() as db:
             account = PaperAccount(
                 id=str(uuid.uuid4()),
                 name=name or f"Account-{uuid.uuid4().hex[:8]}",
@@ -53,7 +53,7 @@ class PaperTradingService:
     
     async def get_account(self, account_id: str) -> Dict[str, Any]:
         """Get account details with positions"""
-        async with get_db() as db:
+        async with async_session() as db:
             result = await db.execute(
                 select(PaperAccount).where(PaperAccount.id == account_id)
             )
@@ -117,7 +117,7 @@ class PaperTradingService:
     
     async def list_accounts(self) -> List[Dict[str, Any]]:
         """List all paper trading accounts"""
-        async with get_db() as db:
+        async with async_session() as db:
             result = await db.execute(select(PaperAccount))
             accounts = result.scalars().all()
             
@@ -152,7 +152,7 @@ class PaperTradingService:
             stop_loss_pct: Optional stop loss percentage (e.g., 5.0 for 5%)
             take_profit_pct: Optional take profit percentage (e.g., 10.0 for 10%)
         """
-        async with get_db() as db:
+        async with async_session() as db:
             # Get account
             result = await db.execute(
                 select(PaperAccount).where(PaperAccount.id == account_id)

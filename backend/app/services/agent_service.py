@@ -24,7 +24,7 @@ import httpx
 from ..services.paper_trading_service import PaperTradingService
 from ..services.market_multi import MultiMarketService
 from ..services.alerts import AlertService
-from ..database import get_db, AgentDecisionHistory
+from ..database import async_session, AgentDecisionHistory
 from ..strategies.rsi_strategy import RSIStrategy
 from ..strategies.macd_strategy import MACDStrategy
 from ..strategies.bollinger_strategy import BollingerStrategy
@@ -322,7 +322,7 @@ class AITradingAgent:
     async def _save_decision_to_history(self, decision: TradeDecision, trade_executed: bool = False, order_id: str = None):
         """Save decision to permanent history in database"""
         try:
-            async with get_db() as db:
+            async with async_session() as db:
                 from sqlalchemy import select
                 from ..database import AgentDecisionHistory
                 import uuid
