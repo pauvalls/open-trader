@@ -2,10 +2,17 @@
 
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
+import os
 
 router = APIRouter()
 
-DASHBOARD_HTML = """
+# Read the improved dashboard HTML from file
+dashboard_path = os.path.join(os.path.dirname(__file__), "dashboard_v2.html")
+with open(dashboard_path, "r", encoding="utf-8") as f:
+    DASHBOARD_HTML = f.read()
+
+# Keep original for reference
+DASHBOARD_HTML_LEGACY = """
 <!DOCTYPE html>
 <html lang="es">
 <head>

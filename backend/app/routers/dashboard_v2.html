@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Trader - Dashboard Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a2e;
+            --border-color: #252538;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888;
+            --accent-blue: #00d4ff;
+            --accent-purple: #7b2cbf;
+            --green: #10b981;
+            --red: #ef4444;
+            --orange: #f59e0b;
+            --yellow: #eab308;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        /* Header */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;
+        }
+        
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand-icon {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .brand h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .brand p { color: var(--text-secondary); font-size: 0.8rem; }
+        
+        .header-actions {
+            display: flex; gap: 10px; align-items: center;
+        }
+        
+        .tutorial-btn {
+            background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue);
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .tutorial-btn:hover { background: rgba(0, 212, 255, 0.1); }
+        
+        .mode-toggle {
+            display: flex; background: var(--bg-secondary); border-radius: 8px; padding: 4px;
+        }
+        .mode-btn {
+            padding: 8px 16px; border: none; background: transparent; color: var(--text-secondary);
+            cursor: pointer; border-radius: 6px; font-size: 0.85rem; transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: var(--accent-purple); color: white;
+        }
+        
+        .status { display: flex; gap: 10px; }
+        .status span {
+            padding: 6px 12px; border-radius: 20px; font-size: 0.75rem;
+        }
+        .status .online { background: rgba(16, 185, 129, 0.1); color: var(--green); border: 1px solid var(--green); }
+        .status .paper { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid #a855f7; }
+        
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex; gap: 5px; margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 10px;
+        }
+        .nav-tab {
+            padding: 12px 24px; border: none; background: transparent;
+            color: var(--text-secondary); cursor: pointer; font-size: 0.9rem;
+            border-radius: 8px 8px 0 0; position: relative; transition: all 0.2s;
+        }
+        .nav-tab:hover { color: var(--text-primary); }
+        .nav-tab.active {
+            color: var(--accent-blue); font-weight: 500;
+        }
+        .nav-tab.active::after {
+            content: ''; position: absolute; bottom: -10px; left: 0; right: 0;
+            height: 2px; background: var(--accent-blue);
+        }
+        .nav-tab .badge {
+            background: var(--red); color: white; font-size: 0.65rem;
+            padding: 2px 6px; border-radius: 10px; margin-left: 5px;
+        }
+        
+        /* Quick Stats Bar */
+        .stats-bar {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px; margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 15px; text-align: center;
+        }
+        .stat-label {
+            color: var(--text-secondary); font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 1.5rem; font-weight: bold;
+        }
+        .stat-value.positive { color: var(--green); }
+        .stat-value.negative { color: var(--red); }
+        .stat-value.neutral { color: var(--accent-blue); }
+        .stat-change {
+            font-size: 0.75rem; margin-top: 2px;
+        }
+        
+        /* Main Content Grid */
+        .main-grid {
+            display: grid; grid-template-columns: 1fr 380px;
+            gap: 20px; margin-bottom: 20px;
+        }
+        @media (max-width: 1200px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 16px; overflow: hidden;
+        }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; border-bottom: 1px solid var(--border-color);
+        }
+        .card-title {
+            font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px;
+        }
+        .card-actions { display: flex; gap: 8px; }
+        .card-body { padding: 20px; }
+        
+        /* Chart */
+        .chart-container {
+            position: relative; height: 450px;
+            background: var(--bg-primary); border-radius: 12px;
+        }
+        
+        /* Trading Panel */
+        .trading-tabs {
+            display: flex; gap: 5px; margin-bottom: 15px;
+        }
+        .trading-tab {
+            flex: 1; padding: 10px; border: none; background: var(--bg-tertiary);
+            color: var(--text-secondary); cursor: pointer; border-radius: 8px;
+            font-size: 0.85rem; transition: all 0.2s;
+        }
+        .trading-tab:hover { color: var(--text-primary); }
+        .trading-tab.active.long {
+            background: rgba(16, 185, 129, 0.2); color: var(--green); border: 1px solid var(--green);
+        }
+        .trading-tab.active.short {
+            background: rgba(239, 68, 68, 0.2); color: var(--red); border: 1px solid var(--red);
+        }
+        
+        /* Form Elements */
+        .form-group { margin-bottom: 15px; }
+        .form-label {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px;
+        }
+        .form-label .tooltip {
+            color: var(--text-secondary); cursor: help; font-size: 0.75rem;
+        }
+        .form-input, .form-select {
+            width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            color: var(--text-primary); padding: 12px 15px; border-radius: 10px;
+            font-size: 1rem; transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none; border-color: var(--accent-blue);
+        }
+        
+        .input-group {
+            display: flex; gap: 10px;
+        }
+        .input-group .form-input { flex: 1; }
+        .input-addon {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); padding: 12px 15px; border-radius: 10px;
+            font-size: 0.85rem;
+        }
+        
+        /* Risk Calculator */
+        .risk-calculator {
+            background: var(--bg-tertiary); border-radius: 10px; padding: 15px;
+            margin-bottom: 15px; font-size: 0.85rem;
+        }
+        .risk-row {
+            display: flex; justify-content: space-between; margin-bottom: 8px;
+        }
+        .risk-row:last-child { margin-bottom: 0; }
+        .risk-label { color: var(--text-secondary); }
+        .risk-value { font-weight: 500; }
+        .risk-value.warning { color: var(--orange); }
+        .risk-value.danger { color: var(--red); }
+        
+        /* Order Buttons */
+        .btn-long {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, var(--green), #059669);
+            border: none; border-radius: 12px; color: white; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: transform 0.1s, opacity 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-long:hover { opacity: 0.9; }
+        .btn-long:active { transform: scale(0.98); }
+        
+        .btn-short {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, var(--red), #dc2626);
+            border: none; border-radius: 12px; color: white; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: transform 0.1s, opacity 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-short:hover { opacity: 0.9; }
+        .btn-short:active { transform: scale(0.98); }
+        
+        /* Positions Table */
+        .positions-table {
+            width: 100%; border-collapse: collapse; font-size: 0.85rem;
+        }
+        .positions-table th {
+            text-align: left; padding: 12px; color: var(--text-secondary);
+            font-weight: 500; border-bottom: 1px solid var(--border-color);
+        }
+        .positions-table td {
+            padding: 12px; border-bottom: 1px solid var(--border-color);
+        }
+        .positions-table tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .position-pnl { font-weight: 600; }
+        .position-pnl.positive { color: var(--green); }
+        .position-pnl.negative { color: var(--red); }
+        
+        .btn-close {
+            padding: 6px 12px; border: none; border-radius: 6px;
+            font-size: 0.75rem; cursor: pointer; transition: opacity 0.2s;
+        }
+        .btn-close.long { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+        .btn-close.short { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+        .btn-close:hover { opacity: 0.8; }
+        
+        /* Order Book Style */
+        .orderbook {
+            font-family: 'Courier New', monospace; font-size: 0.8rem;
+        }
+        .orderbook-row {
+            display: flex; justify-content: space-between; padding: 4px 0;
+        }
+        .orderbook-price { flex: 1; }
+        .orderbook-amount { flex: 1; text-align: right; }
+        .orderbook-total { flex: 1; text-align: right; color: var(--text-secondary); }
+        .orderbook-ask { color: var(--red); }
+        .orderbook-bid { color: var(--green); }
+        .orderbook-spread {
+            text-align: center; padding: 8px; color: var(--text-secondary);
+            font-size: 0.75rem; border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color); margin: 5px 0;
+        }
+        
+        /* Signals */
+        .signal-card {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px; border-radius: 12px; margin-bottom: 15px;
+        }
+        .signal-card.buy { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--green); }
+        .signal-card.sell { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--red); }
+        .signal-card.hold { background: rgba(107, 114, 128, 0.1); border: 1px solid #6b7280; }
+        .signal-icon { font-size: 2rem; }
+        .signal-info { flex: 1; }
+        .signal-title { font-weight: 600; margin-bottom: 2px; }
+        .signal-desc { font-size: 0.8rem; color: var(--text-secondary); }
+        .signal-strength {
+            font-size: 0.75rem; padding: 4px 8px; border-radius: 4px;
+        }
+        .signal-strength.strong { background: var(--green); color: white; }
+        .signal-strength.weak { background: var(--orange); color: white; }
+        
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+        }
+        .toggle-switch {
+            position: relative; width: 44px; height: 24px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-tertiary); border-radius: 24px;
+            transition: 0.3s;
+        }
+        .toggle-slider::before {
+            content: ''; position: absolute; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background: white; border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: var(--accent-blue); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+        
+        /* Tutorial Overlay */
+        .tutorial-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); z-index: 1000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .tutorial-overlay.active { display: flex; }
+        .tutorial-modal {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 20px; width: 90%; max-width: 600px; max-height: 80vh;
+            overflow-y: auto;
+        }
+        .tutorial-header {
+            padding: 20px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .tutorial-title { font-size: 1.2rem; font-weight: 600; }
+        .tutorial-close {
+            background: none; border: none; color: var(--text-secondary);
+            font-size: 1.5rem; cursor: pointer;
+        }
+        .tutorial-body { padding: 20px; }
+        .tutorial-step {
+            display: none;
+        }
+        .tutorial-step.active { display: block; }
+        .tutorial-step h3 {
+            color: var(--accent-blue); margin-bottom: 10px; font-size: 1.1rem;
+        }
+        .tutorial-step p {
+            color: var(--text-secondary); margin-bottom: 15px; line-height: 1.7;
+        }
+        .tutorial-image {
+            background: var(--bg-tertiary); border-radius: 10px; padding: 20px;
+            text-align: center; margin-bottom: 15px;
+        }
+        .tutorial-nav {
+            display: flex; justify-content: space-between; padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .tutorial-progress {
+            display: flex; gap: 5px; justify-content: center; padding: 10px;
+        }
+        .tutorial-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--border-color); transition: background 0.3s;
+        }
+        .tutorial-dot.active { background: var(--accent-blue); }
+        
+        /* Help Tooltip */
+        .help-text {
+            background: rgba(0, 212, 255, 0.1); border-left: 3px solid var(--accent-blue);
+            padding: 10px 15px; border-radius: 0 8px 8px 0;
+            font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 15px;
+        }
+        
+        /* Logs */
+        .logs-container {
+            max-height: 200px; overflow-y: auto;
+            font-family: 'Courier New', monospace; font-size: 0.75rem;
+            background: var(--bg-primary); padding: 15px; border-radius: 10px;
+        }
+        .log-entry { padding: 4px 0; border-bottom: 1px solid var(--border-color); }
+        .log-time { color: #666; }
+        .log-buy { color: var(--green); }
+        .log-sell { color: var(--red); }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            header { flex-direction: column; gap: 15px; text-align: center; }
+            .nav-tabs { overflow-x: auto; }
+        }
+        
+        /* Animations */
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+        .pulse-green { animation: pulse-green 2s infinite; }
+        .pulse-red { animation: pulse-red 2s infinite; }
+        
+        /* Loading */
+        .loading {
+            display: flex; align-items: center; justify-content: center; height: 100%;
+            color: var(--text-secondary);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center; padding: 40px; color: var(--text-secondary);
+        }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <div class="brand-icon">🔥</div>
+                <div>
+                    <h1>Open Trader</h1>
+                    <p>Trading algorítmico simplificado</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="tutorial-btn" onclick="showTutorial()">
+                    📚 Tutorial
+                </button>
+                <div class="mode-toggle">
+                    <button class="mode-btn active" onclick="setMode('paper')">📊 Paper</button>
+                    <button class="mode-btn" onclick="setMode('live')" disabled title="Próximamente">💰 Live</button>
+                </div>
+                <div class="status">
+                    <span class="online">● Conectado</span>
+                    <span class="paper">Modo Demo</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('trading')">📈 Trading</button>
+            <button class="nav-tab" onclick="showTab('positions')">📋 Posiciones <span class="badge" id="positionsBadge">0</span></button>
+            <button class="nav-tab" onclick="showTab('orders')">📜 Órdenes</button>
+            <button class="nav-tab" onclick="showTab('history')">📊 Historial</button>
+            <button class="nav-tab" onclick="showTab('analytics')">📉 Análisis</button>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-label">Balance Total</div>
+                <div class="stat-value neutral" id="totalBalance">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">P&L No Realizado</div>
+                <div class="stat-value" id="totalPnL">-</div>
+                <div class="stat-change" id="pnlChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Posiciones Abiertas</div>
+                <div class="stat-value neutral" id="openPositions">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Disponible</div>
+                <div class="stat-value neutral" id="availableBalance">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Mejor Posición</div>
+                <div class="stat-value positive" id="bestPosition">-</div>
+            </div>
+        </div>
+        
+        <!-- Trading Tab -->
+        <div id="tradingTab" class="tab-content">
+            <div class="main-grid">
+                <!-- Left: Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            📊 Gráfico de Precios
+                            <select id="symbolSelect" onchange="updateChart()" style="margin-left: 10px;">
+                                <option value="BTC/USDT">BTC/USDT</option>
+                                <option value="ETH/USDT" selected>ETH/USDT</option>
+                                <option value="SOL/USDT">SOL/USDT</option>
+                                <option value="AVAX/USDT">AVAX/USDT</option>
+                                <option value="ARB/USDT">ARB/USDT</option>
+                                <option value="OP/USDT">OP/USDT</option>
+                            </select>
+                            <select id="timeframeSelect" onchange="updateChart()" style="margin-left: 5px;">
+                                <option value="15m">15m</option>
+                                <option value="1h" selected>1h</option>
+                                <option value="4h">4h</option>
+                                <option value="1d">1d</option>
+                            </select>
+                        </div>
+                        <div class="card-actions">
+                            <button class="secondary" onclick="scanStrategies()">📡 Escanear</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" id="chartContainer">
+                            <div class="loading">📊 Cargando gráfico...</div>
+                        </div>
+                        
+                        <!-- Signal Display -->
+                        <div id="signalContainer" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Right: Trading Panel -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🚀 Nueva Orden</div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Account Selector -->
+                        <div class="form-group">
+                            <label class="form-label">Cuenta</label>
+                            <select class="form-select" id="accountSelect">
+                                <option value="">Crear cuenta...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Long/Short Toggle -->
+                        <div class="trading-tabs">
+                            <button class="trading-tab active long" onclick="setTradingMode('long')">
+                                🟢 LONG (Subirá)
+                            </button>
+                            <button class="trading-tab short" onclick="setTradingMode('short')">
+                                🔴 SHORT (Bajará)
+                            </button>
+                        </div>
+                        
+                        <!-- Advanced Toggle -->
+                        <div class="toggle-group">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="advancedMode" onchange="toggleAdvanced()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Modo Avanzado (Stop Loss / Take Profit)</span>
+                        </div>
+                        
+                        <!-- Basic Form -->
+                        <div id="basicForm">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Cantidad
+                                    <span class="tooltip" title="Cuánto quieres comprar/vender">ⓘ</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" class="form-input" id="tradeAmount" placeholder="0.1" step="0.01" min="0">
+                                    <span class="input-addon" id="amountUnit">ETH</span>
+                                </div>
+                            </div>
+                            
+                            <div class="help-text">
+                                💡 <strong>Consejo:</strong> En modo Paper Trading usas dinero ficticio. 
+                                Practica sin riesgo antes de operar con dinero real.
+                            </div>
+                            
+                            <button class="btn-long" id="executeBtn" onclick="executeTrade()">
+                                🚀 Abrir Posición LONG
+                            </button>
+                        </div>
+                        
+                        <!-- Advanced Form (Hidden by default) -->
+                        <div id="advancedForm" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Cantidad</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-input" id="advAmount" placeholder="0.1" step="0.01" min="0">
+                                    <span class="input-addon">ETH</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Stop Loss (%)
+                                    <span class="tooltip" title="Precio al que se cerrará automáticamente para limitar pérdidas">ⓘ</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" class="form-input" id="stopLoss" placeholder="5" value="5" min="0.1" max="50" step="0.5">
+                                    <span class="input-addon">%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Take Profit (%)
+                                    <span class="tooltip" title="Precio al que se cerrará automáticamente para tomar ganancias">ⓘ</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" class="form-input" id="takeProfit" placeholder="10" value="10" min="0.1" max="100" step="0.5">
+                                    <span class="input-addon">%</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Risk Calculator -->
+                            <div class="risk-calculator">
+                                <div class="risk-row">
+                                    <span class="risk-label">Precio de entrada (est.):</span>
+                                    <span class="risk-value" id="entryPrice">-</span>
+                                </div>
+                                <div class="risk-row">
+                                    <span class="risk-label">Stop Loss:</span>
+                                    <span class="risk-value" id="slPrice">-</span>
+                                </div>
+                                <div class="risk-row">
+                                    <span class="risk-label">Take Profit:</span>
+                                    <span class="risk-value" id="tpPrice">-</span>
+                                </div>
+                                <div class="risk-row">
+                                    <span class="risk-label">Riesgo total:</span>
+                                    <span class="risk-value" id="totalRisk">-</span>
+                                </div>
+                            </div>
+                            
+                            <button class="btn-long" id="executeAdvBtn" onclick="executeBracketOrder()">
+                                🎯 Crear Orden Bracket
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Positions Tab -->
+        <div id="positionsTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📋 Posiciones Abiertas</div>
+                </div>
+                <div class="card-body">
+                    <div id="positionsList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>No tienes posiciones abiertas</p>
+                            <p style="font-size: 0.8rem; margin-top: 5px;">
+                                Ve a la pestaña "Trading" para abrir tu primera posición
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Orders Tab -->
+        <div id="ordersTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📜 Órdenes Abiertas</div>
+                </div>
+                <div class="card-body">
+                    <div id="openOrdersList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>No hay órdenes pendientes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- History Tab -->
+        <div id="historyTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📊 Historial de Trading</div>
+                </div>
+                <div class="card-body">
+                    <div id="ordersHistoryList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📈</div>
+                            <p>Aún no has realizado operaciones</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="tab-content" style="display: none;">
+            <div class="main-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📉 Rendimiento</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <div class="loading">Gráfico de rendimiento próximamente...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📊 Estadísticas</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-bar" style="grid-template-columns: 1fr 1fr;">
+                            <div class="stat-card">
+                                <div class="stat-label">Operaciones Totales</div>
+                                <div class="stat-value neutral">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Win Rate</div>
+                                <div class="stat-value neutral">-</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Profit Factor</div>
+                                <div class="stat-value neutral">-</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Mejor Trade</div>
+                                <div class="stat-value neutral">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logs -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">📝 Logs</div>
+            </div>
+            <div class="card-body">
+                <div class="logs-container" id="logs">
+                    <div class="log-entry">
+                        <span class="log-time">[Sistema]</span> Open Trader iniciado - Modo Paper Trading
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tutorial Modal -->
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-modal">
+            <div class="tutorial-header">
+                <div class="tutorial-title">📚 Tutorial: Trading para Novatos</div>
+                <button class="tutorial-close" onclick="hideTutorial()">×</button>
+            </div>
+            <div class="tutorial-body">
+                <!-- Step 1 -->
+                <div class="tutorial-step active" data-step="1">
+                    <h3>👋 ¡Bienvenido a Open Trader!</h3>
+                    <p>Este es un <strong>simulador de trading</strong> donde puedes practicar comprando y vendiendo criptomonedas con dinero ficticio.</p>
+                    <div class="tutorial-image">
+                        💰 Dinero Ficticio + 📊 Precios Reales = 🎓 Aprendizaje Sin Riesgo
+                    </div>
+                    <p><strong>¿Qué es el trading?</strong><br>
+                    Es comprar algo (como Bitcoin o Ethereum) esperando que suba de precio para venderlo más caro y ganar dinero.</p>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="tutorial-step" data-step="2">
+                    <h3>🟢 LONG vs 🔴 SHORT</h3>
+                    <p><strong>LONG (Comprar):</strong> Crees que el precio SUBIRÁ.<br>
+                    Ejemplo: Compras ETH a $2000, sube a $2200, vendes. ¡Ganaste $200!</p>
+                    <div class="tutorial-image">
+                        📈 Comprar bajo → Vender alto = Ganancia
+                    </div>
+                    <p><strong>SHORT (Vender en corto):</strong> Crees que el precio BAJARÁ.<br>
+                    Ejemplo: Vendes ETH a $2000, baja a $1800, recompras. ¡Ganaste $200!</p>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="tutorial-step" data-step="3">
+                    <h3>🛡️ Stop Loss y Take Profit</h3>
+                    <p><strong>Stop Loss (SL):</strong> Precio límite de pérdida. Si toca ese precio, se vende automáticamente para no perder más.</p>
+                    <div class="tutorial-image">
+                        🛑 SL: "Si baja más del 5%, véndelo para no perder todo"
+                    </div>
+                    <p><strong>Take Profit (TP):</strong> Precio objetivo de ganancia. Si toca ese precio, se vende automáticamente para asegurar ganancias.</p>
+                    <div class="tutorial-image">
+                        🎯 TP: "Si sube 10%, véndelo y cobra las ganancias"
+                    </div>
+                </div>
+                
+                <!-- Step 4 -->
+                <div class="tutorial-step" data-step="4">
+                    <h3>📊 Cómo Usar el Dashboard</h3>
+                    <p><strong>1. Crear una cuenta:</strong> En el panel derecho, selecciona "Crear cuenta" para empezar con $10,000 ficticios.</p>
+                    <p><strong>2. Elegir par:</strong> Selecciona qué cripto quieres tradear (ETH/USDT, BTC/USDT, etc.)</p>
+                    <p><strong>3. Elegir dirección:</strong> ¿Crees que subirá? → LONG. ¿Que bajará? → SHORT</p>
+                    <p><strong>4. Configurar riesgo:</strong> Activa "Modo Avanzado" para poner Stop Loss y Take Profit</p>
+                    <p><strong>5. Ejecutar:</strong> Click en el botón verde/rojo para abrir la posición</p>
+                </div>
+                
+                <!-- Step 5 -->
+                <div class="tutorial-step" data-step="5">
+                    <h3>🤖 Estrategias Automáticas</h3>
+                    <p>Open Trader tiene <strong>3 estrategias automáticas</strong> que analizan el mercado:</p>
+                    <ul style="margin: 15px 0; padding-left: 20px; color: var(--text-secondary);">
+                        <li><strong>RSI:</strong> Detecta si algo está "sobrecomprado" o "sobrevendido"</li>
+                        <li><strong>MACD:</strong> Detecta cambios de tendencia</li>
+                        <li><strong>Bollinger Bands:</strong> Detecta cuando el precio está extremo</li>
+                    </ul>
+                    <div class="tutorial-image">
+                        Cuando 2+ estrategias coinciden, se muestra señal de COMPRA o VENTA
+                    </div>
+                    <p style="margin-top: 15px;"><strong>⚠️ Disclaimer:</strong> Las señales son solo sugerencias. No son consejo financiero. Siempre investiga por tu cuenta.</p>
+                </div>
+                
+                <!-- Step 6 -->
+                <div class="tutorial-step" data-step="6">
+                    <h3>🎓 Consejos para Empezar</h3>
+                    <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <p style="color: var(--green); margin-bottom: 10px;">✅ <strong>Haz esto:</strong></p>
+                        <ul style="padding-left: 20px; color: var(--text-secondary);">
+                            <li>Empieza con operaciones pequeñas</li>
+                            <li>Siempre usa Stop Loss (nunca pierdas más del 5-10%)</li>
+                            <li>Practica mucho en Paper Trading antes de usar dinero real</li>
+                            <li>Mantén un diario de tus trades (qué hiciste y por qué)</li>
+                        </ul>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 10px;">
+                        <p style="color: var(--red); margin-bottom: 10px;">❌ <strong>Evita esto:</strong></p>
+                        <ul style="padding-left: 20px; color: var(--text-secondary);">
+                            <li>No inviertas más de lo que puedes perder</li>
+                            <li>No entres en pánico si baja (sigue tu plan)</li>
+                            <li>No seas codicioso (toma ganancias cuando alcances tu objetivo)</li>
+                            <li>No sigas señales ciegamente (entiende por qué)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-progress">
+                <div class="tutorial-dot active"></div>
+                <div class="tutorial-dot"></div>
+                <div class="tutorial-dot"></div>
+                <div class="tutorial-dot"></div>
+                <div class="tutorial-dot"></div>
+                <div class="tutorial-dot"></div>
+            </div>
+            <div class="tutorial-nav">
+                <button class="secondary" id="prevBtn" onclick="changeStep(-1)" disabled>Anterior</button>
+                <button id="nextBtn" onclick="changeStep(1)">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        const API_BASE = '';
+        let currentAccount = null;
+        let tradingMode = 'long';
+        let currentPrice = 0;
+        let priceChart = null;
+        let logs = [];
+        let tutorialStep = 1;
+        const totalSteps = 6;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAccounts();
+            updateChart();
+            scanStrategies();
+            
+            // Auto refresh
+            setInterval(() => {
+                if (currentAccount) {
+                    loadAccountData(currentAccount);
+                    loadPositions(currentAccount);
+                }
+                updateChart();
+                scanStrategies();
+            }, 10000);
+            
+            // Show tutorial on first visit
+            if (!localStorage.getItem('tutorialSeen')) {
+                showTutorial();
+            }
+        });
+        
+        // Tab navigation
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'))
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+            event.target.classList.add('active');
+            
+            if (tabName === 'positions' && currentAccount) {
+                loadPositions(currentAccount);
+            } else if (tabName === 'orders' && currentAccount) {
+                loadOpenOrders(currentAccount);
+            } else if (tabName === 'history' && currentAccount) {
+                loadHistory(currentAccount);
+            }
+        }
+        
+        // Trading mode
+        function setTradingMode(mode) {
+            tradingMode = mode;
+            document.querySelectorAll('.trading-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const btn = document.getElementById('executeBtn');
+            const advBtn = document.getElementById('executeAdvBtn');
+            
+            if (mode === 'long') {
+                btn.className = 'btn-long';
+                btn.innerHTML = '🚀 Abrir Posición LONG';
+                advBtn.className = 'btn-long';
+                advBtn.innerHTML = '🎯 Crear Orden Bracket LONG';
+            } else {
+                btn.className = 'btn-short';
+                btn.innerHTML = '📉 Abrir Posición SHORT';
+                advBtn.className = 'btn-short';
+                advBtn.innerHTML = '🎯 Crear Orden Bracket SHORT';
+            }
+            
+            updateRiskCalculator();
+        }
+        
+        // Toggle advanced mode
+        function toggleAdvanced() {
+            const isAdvanced = document.getElementById('advancedMode').checked;
+            document.getElementById('basicForm').style.display = isAdvanced ? 'none' : 'block';
+            document.getElementById('advancedForm').style.display = isAdvanced ? 'block' : 'none';
+            
+            if (isAdvanced && currentPrice) {
+                updateRiskCalculator();
+            }
+        }
+        
+        // Update risk calculator
+        function updateRiskCalculator() {
+            if (!currentPrice) return;
+            
+            const amount = parseFloat(document.getElementById('advAmount').value) || 0;
+            const slPercent = parseFloat(document.getElementById('stopLoss').value) || 5;
+            const tpPercent = parseFloat(document.getElementById('takeProfit').value) || 10;
+            
+            const entry = currentPrice;
+            let sl, tp;
+            
+            if (tradingMode === 'long') {
+                sl = entry * (1 - slPercent / 100);
+                tp = entry * (1 + tpPercent / 100);
+            } else {
+                sl = entry * (1 + slPercent / 100);
+                tp = entry * (1 - tpPercent / 100);
+            }
+            
+            const riskAmount = amount * entry * (slPercent / 100);
+            
+            document.getElementById('entryPrice').textContent = `$${entry.toFixed(2)}`;
+            document.getElementById('slPrice').textContent = `$${sl.toFixed(2)} (${slPercent}%)`;
+            document.getElementById('tpPrice').textContent = `$${tp.toFixed(2)} (${tpPercent}%)`;
+            document.getElementById('totalRisk').textContent = `$${riskAmount.toFixed(2)}`;
+        }
+        
+        // Account management
+        async function loadAccounts() {
+            try {
+                const response = await fetch(`${API_BASE}/paper/accounts`);
+                const accounts = await response.json();
+                
+                const select = document.getElementById('accountSelect');
+                select.innerHTML = '<option value="">Crear cuenta...</option>';
+                
+                accounts.forEach(account => {
+                    const option = document.createElement('option');
+                    option.value = account.id;
+                    option.text = `${account.id.slice(0, 8)}... ($${account.current_balance.toLocaleString()})`;
+                    select.appendChild(option);
+                });
+                
+                // Auto-select or create
+                const saved = localStorage.getItem('openTraderAccount');
+                if (saved && accounts.find(a => a.id === saved)) {
+                    select.value = saved;
+                    selectAccount(saved);
+                } else if (accounts.length === 0) {
+                    await createAccount();
+                }
+                
+                select.addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        selectAccount(e.target.value);
+                    } else {
+                        createAccount();
+                    }
+                });
+                
+            } catch (e) {
+                addLog('error', 'Error cargando cuentas');
+            }
+        }
+        
+        async function createAccount() {
+            try {
+                const response = await fetch(`${API_BASE}/paper/account`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({initial_balance: 10000})
+                });
+                const data = await response.json();
+                currentAccount = data.id;
+                localStorage.setItem('openTraderAccount', currentAccount);
+                
+                await loadAccounts();
+                document.getElementById('accountSelect').value = currentAccount;
+                selectAccount(currentAccount);
+                addLog('system', `Cuenta creada con $10,000`);
+            } catch (e) {
+                addLog('error', 'Error creando cuenta');
+            }
+        }
+        
+        async function selectAccount(accountId) {
+            currentAccount = accountId;
+            localStorage.setItem('openTraderAccount', accountId);
+            await loadAccountData(accountId);
+            await loadPositions(accountId);
+        }
+        
+        async function loadAccountData(accountId) {
+            try {
+                const response = await fetch(`${API_BASE}/paper/account/${accountId}`);
+                const data = await response.json();
+                
+                document.getElementById('totalBalance').textContent = 
+                    `$${(data.total_value || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                
+                const pnl = data.unrealized_pnl || 0;
+                const pnlEl = document.getElementById('totalPnL');
+                pnlEl.textContent = `${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toLocaleString()}`;
+                pnlEl.className = 'stat-value ' + (pnl >= 0 ? 'positive' : 'negative');
+                
+                document.getElementById('openPositions').textContent = data.open_positions || '0';
+                document.getElementById('availableBalance').textContent = 
+                    `$${(data.current_balance_usd || 0).toLocaleString()}`;
+                document.getElementById('positionsBadge').textContent = data.open_positions || '0';
+                
+            } catch (e) {
+                console.error('Error loading account:', e);
+            }
+        }
+        
+        // Chart
+        async function updateChart() {
+            const symbol = document.getElementById('symbolSelect').value;
+            const timeframe = document.getElementById('timeframeSelect').value;
+            const container = document.getElementById('chartContainer');
+            
+            container.innerHTML = '<div class="loading">📊 Cargando gráfico...</div>';
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE}/market/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=100`
+                );
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const result = await response.json();
+                if (!result.data || result.data.length === 0) {
+                    container.innerHTML = '<div class="loading">❌ No hay datos disponibles</div>';
+                    return;
+                }
+                
+                currentPrice = result.data[result.data.length - 1].close;
+                updateRiskCalculator();
+                
+                const candles = result.data.slice(-50);
+                const labels = candles.map(c => {
+                    const date = new Date(c.timestamp);
+                    return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                });
+                const prices = candles.map(c => c.close);
+                
+                container.innerHTML = '<canvas id="priceChart"></canvas>';
+                const ctx = document.getElementById('priceChart').getContext('2d');
+                
+                if (priceChart) priceChart.destroy();
+                
+                const isUp = prices[prices.length - 1] >= prices[0];
+                const gradient = ctx.createLinearGradient(0, 0, 0, 450);
+                gradient.addColorStop(0, isUp ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)');
+                gradient.addColorStop(1, isUp ? 'rgba(16, 185, 129, 0)' : 'rgba(239, 68, 68, 0)');
+                
+                priceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `${symbol} via ${result.provider || 'binance'}`,
+                            data: prices,
+                            borderColor: isUp ? '#10b981' : '#ef4444',
+                            backgroundColor: gradient,
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { labels: { color: '#888' } },
+                            tooltip: {
+                                backgroundColor: '#1a1a2e',
+                                titleColor: '#e0e0e0',
+                                bodyColor: '#e0e0e0',
+                                borderColor: '#333',
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: (context) => `Precio: $${context.parsed.y.toFixed(4)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { grid: { color: '#1a1a2e' }, ticks: { color: '#666', maxTicksLimit: 8 } },
+                            y: { grid: { color: '#1a1a2e' }, ticks: { color: '#666', callback: (v) => '$' + v.toFixed(2) } }
+                        }
+                    }
+                });
+                
+            } catch (e) {
+                container.innerHTML = `
+                    <div class="loading">
+                        ❌ Error cargando gráfico<br>
+                        <button onclick="updateChart()" style="margin-top:10px;">🔄 Reintentar</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Strategies
+        async function scanStrategies() {
+            const symbol = document.getElementById('symbolSelect').value;
+            const container = document.getElementById('signalContainer');
+            
+            try {
+                const response = await fetch(`${API_BASE}/strategies/scan?symbol=${encodeURIComponent(symbol)}`);
+                const data = await response.json();
+                
+                const emoji = data.consensus === 'buy' ? '🟢' : data.consensus === 'sell' ? '🔴' : '⚪';
+                const title = data.consensus === 'buy' ? 'COMPRAR' : data.consensus === 'sell' ? 'VENDER' : 'MANTENER';
+                const strength = data.consensus === 'buy' ? 'strong' : data.consensus === 'sell' ? 'strong' : 'weak';
+                
+                container.innerHTML = `
+                    <div class="signal-card ${data.consensus}">
+                        <div class="signal-icon">${emoji}</div>
+                        <div class="signal-info">
+                            <div class="signal-title">Señal: ${title}</div>
+                            <div class="signal-desc">
+                                RSI: ${data.individual_signals?.rsi || '-'} | 
+                                MACD: ${data.individual_signals?.macd || '-'} | 
+                                Bollinger: ${data.individual_signals?.bollinger || '-'}
+                            </div>
+                        </div>
+                        <span class="signal-strength ${strength}">
+                            ${data.consensus === 'buy' ? 'ALTA' : data.consensus === 'sell' ? 'ALTA' : 'NEUTRA'}
+                        </span>
+                    </div>
+                `;
+                
+            } catch (e) {
+                container.innerHTML = '<div class="signal-card hold"><div class="signal-desc">Error escaneando estrategias</div></div>';
+            }
+        }
+        
+        // Trading
+        async function executeTrade() {
+            if (!currentAccount) {
+                alert('Primero crea una cuenta');
+                return;
+            }
+            
+            const symbol = document.getElementById('symbolSelect').value;
+            const amount = parseFloat(document.getElementById('tradeAmount').value);
+            
+            if (!amount || amount <= 0) {
+                alert('Ingresa una cantidad válida');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/paper/order`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        account_id: currentAccount,
+                        symbol: symbol,
+                        side: tradingMode === 'long' ? 'buy' : 'sell',
+                        amount: amount
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addLog(tradingMode === 'long' ? 'buy' : 'sell', 
+                        `${tradingMode.toUpperCase()} ${amount} ${symbol} @ $${data.price.toFixed(2)}`);
+                    loadAccountData(currentAccount);
+                    loadPositions(currentAccount);
+                    alert('✅ Orden ejecutada con éxito');
+                } else {
+                    addLog('error', data.detail || 'Error ejecutando orden');
+                }
+            } catch (e) {
+                addLog('error', 'Error de conexión');
+            }
+        }
+        
+        async function executeBracketOrder() {
+            if (!currentAccount) {
+                alert('Primero crea una cuenta');
+                return;
+            }
+            
+            const symbol = document.getElementById('symbolSelect').value;
+            const amount = parseFloat(document.getElementById('advAmount').value);
+            const slPercent = parseFloat(document.getElementById('stopLoss').value);
+            const tpPercent = parseFloat(document.getElementById('takeProfit').value);
+            
+            if (!amount || amount <= 0) {
+                alert('Ingresa una cantidad válida');
+                return;
+            }
+            
+            const entry = currentPrice;
+            const sl = tradingMode === 'long' ? entry * (1 - slPercent/100) : entry * (1 + slPercent/100);
+            const tp = tradingMode === 'long' ? entry * (1 + tpPercent/100) : entry * (1 - tpPercent/100);
+            
+            try {
+                const response = await fetch(`${API_BASE}/orders/bracket`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        account_id: currentAccount,
+                        symbol: symbol,
+                        side: tradingMode,
+                        amount: amount,
+                        stop_loss_price: sl,
+                        take_profit_price: tp
+                    })
+                });
+                
+                if (response.ok) {
+                    addLog('system', `Bracket ${tradingMode.toUpperCase()}: Entry $${entry.toFixed(2)}, SL $${sl.toFixed(2)}, TP $${tp.toFixed(2)}`);
+                    loadAccountData(currentAccount);
+                    alert('✅ Orden Bracket creada con SL y TP');
+                } else {
+                    const data = await response.json();
+                    addLog('error', data.detail || 'Error creando orden');
+                }
+            } catch (e) {
+                addLog('error', 'Error de conexión');
+            }
+        }
+        
+        // Positions
+        async function loadPositions(accountId) {
+            try {
+                const response = await fetch(`${API_BASE}/paper/account/${accountId}`);
+                const data = await response.json();
+                
+                const container = document.getElementById('positionsList');
+                
+                if (!data.positions || data.positions.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>No tienes posiciones abiertas</p>
+                            <p style="font-size: 0.8rem; margin-top: 5px;">
+                                Ve a la pestaña "Trading" para abrir tu primera posición
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = `
+                    <table class="positions-table">
+                        <thead>
+                            <tr>
+                                <th>Par</th>
+                                <th>Side</th>
+                                <th>Cantidad</th>
+                                <th>Entry</th>
+                                <th>Actual</th>
+                                <th>P&L</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.positions.forEach(p => {
+                    const pnl = p.unrealized_pnl || 0;
+                    html += `
+                        <tr>
+                            <td><strong>${p.symbol}</strong></td>
+                            <td style="color: ${p.side === 'long' ? 'var(--green)' : 'var(--red)'}">${p.side.toUpperCase()}</td>
+                            <td>${p.amount.toFixed(6)}</td>
+                            <td>$${p.entry_price.toFixed(2)}</td>
+                            <td>$${(p.current_price || p.entry_price).toFixed(2)}</td>
+                            <td class="position-pnl ${pnl >= 0 ? 'positive' : 'negative'}">
+                                ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}
+                            </td>
+                            <td>
+                                <button class="btn-close ${p.side}" onclick="closePosition('${p.symbol}')">
+                                    Cerrar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                
+            } catch (e) {
+                console.error('Error loading positions:', e);
+            }
+        }
+        
+        async function closePosition(symbol) {
+            // TODO: Implement close position
+            alert('Función de cierre próximamente');
+        }
+        
+        // Logs
+        function addLog(type, message) {
+            const time = new Date().toLocaleTimeString();
+            const colors = { buy: 'log-buy', sell: 'log-sell', error: 'log-sell', system: 'log-time' };
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="${colors[type] || 'log-time'}">${message}</span>`;
+            
+            const container = document.getElementById('logs');
+            container.insertBefore(entry, container.firstChild);
+            
+            // Keep only last 50 logs
+            while (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+        
+        // Tutorial
+        function showTutorial() {
+            document.getElementById('tutorialOverlay').classList.add('active');
+            tutorialStep = 1;
+            updateTutorialUI();
+        }
+        
+        function hideTutorial() {
+            document.getElementById('tutorialOverlay').classList.remove('active');
+            localStorage.setItem('tutorialSeen', 'true');
+        }
+        
+        function changeStep(direction) {
+            tutorialStep += direction;
+            if (tutorialStep < 1) tutorialStep = 1;
+            if (tutorialStep > totalSteps) {
+                hideTutorial();
+                return;
+            }
+            updateTutorialUI();
+        }
+        
+        function updateTutorialUI() {
+            document.querySelectorAll('.tutorial-step').forEach((step, i) => {
+                step.classList.toggle('active', i + 1 === tutorialStep);
+            });
+            document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i + 1 === tutorialStep);
+            });
+            document.getElementById('prevBtn').disabled = tutorialStep === 1;
+            document.getElementById('nextBtn').textContent = tutorialStep === totalSteps ? '¡Empezar!' : 'Siguiente';
+        }
+        
+        // Mode toggle
+        function setMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        // Load open orders and history (placeholders)
+        async function loadOpenOrders(accountId) {
+            document.getElementById('openOrdersList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <p>No hay órdenes pendientes</p>
+                </div>
+            `;
+        }
+        
+        async function loadHistory(accountId) {
+            document.getElementById('ordersHistoryList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📈</div>
+                    <p>Aún no has realizado operaciones</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
