@@ -53,6 +53,28 @@ async def create_account(
     }
 
 
+@router.get("/accounts")
+async def list_accounts(
+    db: AsyncSession = Depends(get_db)
+):
+    """Listar todas las cuentas de paper trading"""
+    result = await db.execute(
+        select(PaperAccount).order_by(PaperAccount.created_at.desc())
+    )
+    accounts = result.scalars().all()
+    
+    return [
+        {
+            "id": a.id,
+            "created_at": a.created_at,
+            "initial_balance": a.initial_balance_usd,
+            "current_balance": a.current_balance_usd,
+            "is_active": a.is_active
+        }
+        for a in accounts
+    ]
+
+
 @router.get("/account/{account_id}")
 async def get_account(
     account_id: str,
