@@ -4,8 +4,10 @@ import pandas as pd
 import numpy as np
 from typing import Dict
 
+from .base_strategy import BaseStrategy
 
-class BollingerStrategy:
+
+class BollingerStrategy(BaseStrategy):
     """
     Estrategia basada en Bandas de Bollinger
     

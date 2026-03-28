@@ -4,8 +4,10 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List
 
+from .base_strategy import BaseStrategy
 
-class RSIStrategy:
+
+class RSIStrategy(BaseStrategy):
     """
     Estrategia basada en RSI (Relative Strength Index)
     

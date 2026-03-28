@@ -4,8 +4,10 @@ import pandas as pd
 import numpy as np
 from typing import Dict
 
+from .base_strategy import BaseStrategy
 
-class MACDStrategy:
+
+class MACDStrategy(BaseStrategy):
     """
     Estrategia basada en MACD (Moving Average Convergence Divergence)
     

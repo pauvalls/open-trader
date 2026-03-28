@@ -26,6 +26,7 @@ from ..services.market_multi import MultiMarketService
 from ..strategies.rsi_strategy import RSIStrategy
 from ..strategies.macd_strategy import MACDStrategy
 from ..strategies.bollinger_strategy import BollingerStrategy
+from ..strategies.base_strategy import BaseStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -248,7 +249,12 @@ class AITradingAgent:
         # Get signals from each strategy
         for name, strategy in self.strategies.items():
             try:
-                signal = await strategy.get_signal(symbol, self.config.timeframe)
+                # Use async method from BaseStrategy
+                if isinstance(strategy, BaseStrategy):
+                    signal = await strategy.get_signal_async(symbol, self.config.timeframe, self.market_service)
+                else:
+                    # Fallback for legacy strategies
+                    signal = await self._get_strategy_signal(strategy, symbol)
                 signals[name] = signal
                 
                 if signal == 'buy':
@@ -326,6 +332,23 @@ class AITradingAgent:
             timestamp=datetime.now(),
             kimi_analysis=kimi_analysis
         )
+        
+    async def _get_strategy_signal(self, strategy, symbol: str) -> str:
+        """
+        Fallback method to get signal from legacy strategies
+        """
+        import pandas as pd
+        
+        candles = await self.market_service.get_candles(symbol, self.config.timeframe, limit=100)
+        if not candles or len(candles) < 30:
+            return 'hold'
+        
+        df = pd.DataFrame(candles)
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+        df.set_index('timestamp', inplace=True)
+        
+        result = strategy.get_signal(df)
+        return result.get('action', 'hold')
         
     async def _get_kimi_analysis(
         self, 
