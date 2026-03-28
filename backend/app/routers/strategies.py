@@ -160,7 +160,7 @@ async def get_signal(strategy_name: str, symbol: str, timeframe: str = "1h"):
     }
 
 
-@router.post("/scan")
+@router.get("/scan")
 async def scan_all_strategies(symbol: str, timeframe: str = "1h"):
     """Escanea todas las estrategias y devuelve consenso"""
     

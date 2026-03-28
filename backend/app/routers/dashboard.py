@@ -660,5 +660,5 @@ async def dashboard_status():
     return {
         "status": "running",
         "mode": "paper_trading",
-        "version": "0.2.0"
+        "version": "0.2.1"
     }
