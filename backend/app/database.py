@@ -84,6 +84,28 @@ class PaperOrder(Base):
     metadata_json = Column(JSON, nullable=True)  # Para guardar señales de estrategia
 
 
+class TradeJournal(Base):
+    """Journal entries for trades - notes, reflections, lessons learned"""
+    __tablename__ = "trade_journal"
+    
+    id = Column(String, primary_key=True)
+    order_id = Column(String, nullable=False)
+    account_id = Column(String, nullable=False)
+    
+    # Journal content
+    notes = Column(String, nullable=True)  # General notes about the trade
+    emotions = Column(String(50), nullable=True)  # How did you feel?
+    mistakes = Column(String, nullable=True)  # What went wrong?
+    lessons = Column(String, nullable=True)  # What did you learn?
+    strategy_rating = Column(Float, nullable=True)  # 1-10 rating
+    
+    # Tags for categorization
+    tags = Column(String, nullable=True)  # Comma-separated tags
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 async def init_db():
     """Initialize database tables"""
     async with engine.begin() as conn:

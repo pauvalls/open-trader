@@ -4,7 +4,7 @@
 
 **Algorithmic Crypto Trading System with AI Agent**
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/open-trader)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/KONjjS?referralCode=AFwpbJ&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 [English](#english) | [Español](#español)
 

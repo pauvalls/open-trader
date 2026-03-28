@@ -7,7 +7,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import paper_trading, market_data, strategies, health, dashboard, advanced_orders, agent
+from app.routers import (
+    paper_trading, market_data, strategies, health, 
+    dashboard, advanced_orders, agent, websocket, export, journal, webhook
+)
 
 
 @asynccontextmanager
@@ -20,7 +23,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     
     # Log available routes for debugging
-    print("🚀 Open Trader v0.4.0 iniciado")
+    print("🚀 Open Trader v0.5.0 iniciado")
     print("📡 Routes loaded:")
     for route in app.routes:
         if hasattr(route, 'methods'):
@@ -57,18 +60,26 @@ app.include_router(market_data.router, prefix="/market", tags=["Market Data"])
 app.include_router(strategies.router, prefix="/strategies", tags=["Estrategias"])
 app.include_router(advanced_orders.router, prefix="/orders", tags=["Órdenes Avanzadas"])
 app.include_router(agent.router, tags=["AI Trading Agent"])
+app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
+app.include_router(export.router, prefix="/export", tags=["Export"])
+app.include_router(journal.router, prefix="/journal", tags=["Trading Journal"])
+app.include_router(webhook.router, prefix="/webhook", tags=["Webhooks"])
 
 
 @app.get("/")
 async def root():
     return {
         "name": "Open Trader",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "status": "running",
         "mode": "paper_trading",
-        "features": ["multi-dex", "advanced-orders", "realtime-charts", "multi-provider", "ai-agent"],
+        "features": [
+            "multi-dex", "advanced-orders", "realtime-charts", 
+            "multi-provider", "ai-agent", "i18n", "postgresql",
+            "websocket", "export", "trading-journal", "webhooks"
+        ],
         "docs": "/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
-        "dashboard": "/dashboard/"
+        "dashboard": "/"
     }
 
 
@@ -78,7 +89,11 @@ async def version():
     return {
         "version": "0.5.0",
         "release_date": "2026-03-28",
-        "features": ["paper-trading", "multi-dex", "ai-agent", "auto-trading", "i18n", "postgresql"],
+        "features": [
+            "paper-trading", "multi-dex", "ai-agent", "auto-trading", 
+            "i18n", "postgresql", "websocket-realtime", "export-csv-json",
+            "trading-journal", "webhook-signals"
+        ],
         "changelog": "https://github.com/pauvalls/open-trader/blob/main/CHANGELOG.md"
     }
 

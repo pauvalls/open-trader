@@ -1,0 +1,27 @@
+# ============================================
+# RAILWAY RAW ENVIRONMENT VARIABLES
+# Copy and paste into Railway Dashboard
+# Variables → Raw Editor
+# ============================================
+
+# MINIMAL (Basic functionality)
+SECRET_KEY=change-this-secret-key-in-production
+DEBUG=false
+PORT=8000
+
+# ============================================
+# OR FULL SETUP (Uncomment what you need)
+# ============================================
+
+# PostgreSQL (Auto-set if you add Postgres addon)
+# DATABASE_URL=${{Postgres.DATABASE_URL}}
+
+# Kimi AI (Get from https://platform.moonshot.cn/)
+# KIMI_API_KEY=your-kimi-api-key
+
+# Telegram Alerts (@BotFather for token)
+# TELEGRAM_BOT_TOKEN=your-bot-token
+# TELEGRAM_CHAT_ID=your-chat-id
+
+# Discord Alerts
+# DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxx/yyy
