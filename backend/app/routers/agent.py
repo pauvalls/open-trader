@@ -11,7 +11,7 @@ from datetime import datetime
 
 from ..services.agent_service import (
     AITradingAgent, AgentConfig, get_or_create_agent, 
-    get_agent, list_agents, AgentStatus
+    get_agent, list_agents, AgentStatus, save_agent_state
 )
 from ..services.paper_trading_service import PaperTradingService
 from ..services.market_multi import MultiMarketService
@@ -172,6 +172,9 @@ async def create_agent(
     # Create agent
     agent = get_or_create_agent(agent_id, config, trading_service, market_service)
     
+    # Save to database
+    await save_agent_state(agent_id, agent)
+    
     return {
         "agent_id": agent_id,
         "status": agent.state.status.value,
@@ -203,21 +206,25 @@ async def control_agent(
         if agent.state.status == AgentStatus.RUNNING:
             raise HTTPException(400, "Agent is already running")
         await agent.start()
+        await save_agent_state(agent_id, agent)
         
     elif request.action == "stop":
         if agent.state.status == AgentStatus.IDLE:
             raise HTTPException(400, "Agent is not running")
         await agent.stop()
+        await save_agent_state(agent_id, agent)
         
     elif request.action == "pause":
         if agent.state.status != AgentStatus.RUNNING:
             raise HTTPException(400, "Agent is not running")
         await agent.pause()
+        await save_agent_state(agent_id, agent)
         
     elif request.action == "resume":
         if agent.state.status != AgentStatus.PAUSED:
             raise HTTPException(400, "Agent is not paused")
         await agent.resume()
+        await save_agent_state(agent_id, agent)
     
     return {
         "agent_id": agent_id,

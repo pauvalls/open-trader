@@ -27,6 +27,12 @@ async def lifespan(app: FastAPI):
     sltp_monitor = get_sltp_monitor()
     await sltp_monitor.start()
     
+    # Load and auto-start enabled agents
+    from app.services.agent_service import load_all_enabled_agents
+    from app.services.paper_trading_service import PaperTradingService
+    from app.services.market_multi import MultiMarketService
+    await load_all_enabled_agents(PaperTradingService(), MultiMarketService())
+    
     # Log available routes for debugging
     print("🚀 Open Trader v0.5.0 iniciado")
     print("🎯 SL/TP Monitor started")

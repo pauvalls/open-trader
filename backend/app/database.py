@@ -141,6 +141,31 @@ class UserConfig(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class TradingAgent(Base):
+    """Agente de trading persistente"""
+    __tablename__ = "trading_agents"
+    
+    id = Column(String, primary_key=True)
+    account_id = Column(String, nullable=False, index=True)
+    
+    # Status
+    is_enabled = Column(Boolean, default=False)
+    status = Column(String, default='stopped')  # running, stopped, paused, error
+    
+    # Config
+    config_json = Column(JSON, default=dict)  # All agent config
+    
+    # Runtime state
+    last_check_at = Column(DateTime, nullable=True)
+    last_error = Column(String, nullable=True)
+    trades_today = Column(Integer, default=0)
+    positions_opened = Column(Integer, default=0)
+    positions_closed = Column(Integer, default=0)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class AgentDecisionHistory(Base):
     """Historial permanente de decisiones del agente de trading"""
     __tablename__ = "agent_decision_history"

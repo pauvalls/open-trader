@@ -574,6 +574,135 @@ Respond in JSON format:
 _agents: Dict[str, AITradingAgent] = {}
 
 
+async def save_agent_state(agent_id: str, agent: AITradingAgent):
+    """Save agent state to database"""
+    try:
+        async with async_session() as db:
+            from ..database import TradingAgent
+            
+            result = await db.execute(
+                select(TradingAgent).where(TradingAgent.id == agent_id)
+            )
+            db_agent = result.scalar_one_or_none()
+            
+            config_dict = {
+                "account_id": agent.config.account_id,
+                "symbols": agent.config.symbols,
+                "timeframe": agent.config.timeframe,
+                "check_interval_minutes": agent.config.check_interval_minutes,
+                "use_rsi": agent.config.use_rsi,
+                "use_macd": agent.config.use_macd,
+                "use_bollinger": agent.config.use_bollinger,
+                "consensus_threshold": agent.config.consensus_threshold,
+                "max_position_size_usd": agent.config.max_position_size_usd,
+                "max_positions": agent.config.max_positions,
+                "max_daily_trades": agent.config.max_daily_trades,
+                "stop_loss_pct": agent.config.stop_loss_pct,
+                "take_profit_pct": agent.config.take_profit_pct,
+                "use_kimi_api": agent.config.use_kimi_api,
+                "kimi_confidence_threshold": agent.config.kimi_confidence_threshold,
+                "min_volume_24h": agent.config.min_volume_24h,
+                "exclude_symbols": agent.config.exclude_symbols,
+            }
+            
+            if db_agent:
+                db_agent.is_enabled = agent.state.status == AgentStatus.RUNNING
+                db_agent.status = agent.state.status.value
+                db_agent.config_json = config_dict
+                db_agent.last_check_at = agent.state.last_check
+                db_agent.trades_today = agent.state.trades_today
+                db_agent.positions_opened = agent.state.positions_opened
+                db_agent.positions_closed = agent.state.positions_closed
+                db_agent.last_error = agent.state.errors[-1] if agent.state.errors else None
+            else:
+                db_agent = TradingAgent(
+                    id=agent_id,
+                    account_id=agent.config.account_id,
+                    is_enabled=agent.state.status == AgentStatus.RUNNING,
+                    status=agent.state.status.value,
+                    config_json=config_dict,
+                    last_check_at=agent.state.last_check,
+                    trades_today=agent.state.trades_today,
+                    positions_opened=agent.state.positions_opened,
+                    positions_closed=agent.state.positions_closed,
+                    last_error=agent.state.errors[-1] if agent.state.errors else None,
+                )
+                db.add(db_agent)
+            
+            await db.commit()
+            logger.info(f"💾 Agent {agent_id} state saved to database")
+    except Exception as e:
+        logger.error(f"Failed to save agent state: {e}")
+
+
+async def load_agent_config(agent_id: str) -> Optional[AgentConfig]:
+    """Load agent config from database"""
+    try:
+        async with async_session() as db:
+            from ..database import TradingAgent
+            
+            result = await db.execute(
+                select(TradingAgent).where(TradingAgent.id == agent_id)
+            )
+            db_agent = result.scalar_one_or_none()
+            
+            if not db_agent or not db_agent.config_json:
+                return None
+            
+            cfg = db_agent.config_json
+            return AgentConfig(
+                account_id=cfg.get("account_id", ""),
+                symbols=cfg.get("symbols", ["ETH/USDT"]),
+                timeframe=cfg.get("timeframe", "1h"),
+                check_interval_minutes=cfg.get("check_interval_minutes", 15),
+                use_rsi=cfg.get("use_rsi", True),
+                use_macd=cfg.get("use_macd", True),
+                use_bollinger=cfg.get("use_bollinger", True),
+                consensus_threshold=cfg.get("consensus_threshold", 2),
+                max_position_size_usd=cfg.get("max_position_size_usd", 1000),
+                max_positions=cfg.get("max_positions", 3),
+                max_daily_trades=cfg.get("max_daily_trades", 10),
+                stop_loss_pct=cfg.get("stop_loss_pct", 5),
+                take_profit_pct=cfg.get("take_profit_pct", 10),
+                use_kimi_api=cfg.get("use_kimi_api", False),
+                kimi_confidence_threshold=cfg.get("kimi_confidence_threshold", 0.7),
+                min_volume_24h=cfg.get("min_volume_24h", 1000000),
+                exclude_symbols=cfg.get("exclude_symbols", []),
+            )
+    except Exception as e:
+        logger.error(f"Failed to load agent config: {e}")
+        return None
+
+
+async def load_all_enabled_agents(trading_service, market_service):
+    """Load and start all enabled agents from database"""
+    try:
+        async with async_session() as db:
+            from ..database import TradingAgent
+            
+            result = await db.execute(
+                select(TradingAgent).where(TradingAgent.is_enabled == True)
+            )
+            db_agents = result.scalars().all()
+            
+            for db_agent in db_agents:
+                agent_id = db_agent.id
+                config = await load_agent_config(agent_id)
+                
+                if config:
+                    agent = AITradingAgent(config, trading_service, market_service)
+                    agent.state.trades_today = db_agent.trades_today or 0
+                    agent.state.positions_opened = db_agent.positions_opened or 0
+                    agent.state.positions_closed = db_agent.positions_closed or 0
+                    _agents[agent_id] = agent
+                    
+                    # Start the agent
+                    await agent.start()
+                    logger.info(f"🤖 Auto-started agent {agent_id} from database")
+    except Exception as e:
+        logger.error(f"Failed to load enabled agents: {e}")
+
+
 def get_or_create_agent(
     agent_id: str,
     config: AgentConfig,
