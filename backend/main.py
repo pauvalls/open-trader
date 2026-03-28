@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import paper_trading, market_data, strategies, health, dashboard
+from app.routers import paper_trading, market_data, strategies, health, dashboard, advanced_orders
 
 
 @asynccontextmanager
@@ -47,6 +47,7 @@ app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(paper_trading.router, prefix="/paper", tags=["Paper Trading"])
 app.include_router(market_data.router, prefix="/market", tags=["Market Data"])
 app.include_router(strategies.router, prefix="/strategies", tags=["Estrategias"])
+app.include_router(advanced_orders.router, prefix="/orders", tags=["Órdenes Avanzadas"])
 
 
 @app.get("/")

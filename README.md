@@ -8,9 +8,10 @@ Sistema de trading algorítmico de criptomonedas con soporte para paper trading 
 
 - **📊 Paper Trading**: Simula operaciones con dinero ficticio usando precios de mercado reales
 - **📈 Estrategias**: RSI, MACD, Bollinger Bands + sistema de consenso multi-estrategia
+- **🎯 Órdenes Avanzadas**: Limit, Stop-Loss, Trailing Stop, Bracket Orders (Entry + SL + TP)
+- **🏦 Multi-DEX**: Soporte Uniswap V3, PancakeSwap V3, SushiSwap V3 (fácil cambio entre DEXs)
 - **🔔 Alertas**: Notificaciones en tiempo real vía Telegram y Discord
-- **📱 Dashboard**: Interfaz web en tiempo real para monitorear operaciones
-- **🔗 Uniswap V3**: Integración lista para trading real en Arbitrum/Base
+- **📱 Dashboard**: Interfaz web en tiempo real con gráficos de precios
 - **🏠 Self-hosted**: Tú controlas tus claves y tu instancia
 
 ## 📁 Estructura
@@ -34,6 +35,16 @@ open-trader/
 ```
 
 ## 🚀 Quick Start
+
+### Multi-DEX Soportados
+
+| DEX | Chains | Identificador |
+|-----|--------|---------------|
+| **Uniswap V3** | Ethereum, Arbitrum, Base, Optimism, Polygon | `uniswap-arbitrum` |
+| **PancakeSwap V3** | BSC, Arbitrum, Base | `pancakeswap-bsc` |
+| **SushiSwap V3** | Ethereum, Arbitrum, Base | `sushiswap-arbitrum` |
+
+Cambiar de DEX es simple: solo cambia el parámetro `dex_id` en las órdenes.
 
 ### Docker (Recomendado)
 
@@ -172,7 +183,70 @@ POST /strategies/rsi/backtest
 GET /strategies/scan?symbol=BTC/USDT
 ```
 
-### Market Data
+### Órdenes Avanzadas
+```bash
+# Market Order (ejecución inmediata)
+POST /orders/market
+{
+  "account_id": "uuid",
+  "symbol": "ETH/USDT",
+  "side": "buy",
+  "amount": 0.5,
+  "dex_id": "uniswap-arbitrum"
+}
+
+# Limit Order (ejecución a precio específico)
+POST /orders/limit
+{
+  "account_id": "uuid",
+  "symbol": "ETH/USDT",
+  "side": "buy",
+  "amount": 0.5,
+  "price": 1800.00,
+  "expires_hours": 24
+}
+
+# Stop Loss (se activa al cruzar precio)
+POST /orders/stop-loss
+{
+  "account_id": "uuid",
+  "symbol": "ETH/USDT",
+  "side": "sell",
+  "amount": 0.5,
+  "stop_price": 1800.00
+}
+
+# Trailing Stop (stop móvil con el precio)
+POST /orders/trailing-stop
+{
+  "account_id": "uuid",
+  "symbol": "ETH/USDT",
+  "side": "sell",
+  "amount": 0.5,
+  "trailing_percent": 5.0
+}
+
+# Bracket Order (Entry + Stop Loss + Take Profit con OCO)
+POST /orders/bracket
+{
+  "account_id": "uuid",
+  "symbol": "ETH/USDT",
+  "side": "buy",
+  "amount": 0.5,
+  "entry_price": 2000.00,      # null para market entry
+  "stop_loss_price": 1800.00,  # -10% stop loss
+  "take_profit_price": 2400.00 # +20% take profit
+}
+
+# Listar DEXs disponibles
+GET /orders/dexes
+
+# Ver órdenes abiertas
+GET /orders/open/{account_id}
+
+# Cancelar orden
+DELETE /orders/{order_id}
+```
 ```bash
 # Precio actual
 GET /market/price/ETH/USDT
@@ -207,20 +281,24 @@ Configura TELEGRAM_BOT_TOKEN y DISCORD_WEBHOOK_URL en `.env` para recibirlas.
 ### Fase 1: Paper Trading ✅
 - [x] Sistema de paper trading
 - [x] Múltiples estrategias (RSI, MACD, Bollinger)
+- [x] Órdenes avanzadas (limit, stop-loss, trailing stop, bracket)
+- [x] Multi-DEX (Uniswap, PancakeSwap, SushiSwap)
+- [x] Dashboard con gráficos
 - [x] Alertas Telegram/Discord
-- [x] Dashboard en tiempo real
 - [ ] Machine Learning para estrategias
 
 ### Fase 2: Live Trading 🔄
-- [ ] Integración Uniswap V3
-- [ ] Gestión de gas y slippage
-- [ ] Protecciones de seguridad (stop-loss, límites)
+- [ ] Wallet integration (private key management)
+- [ ] Gas estimation and optimization
+- [ ] Slippage protection
 - [ ] Análisis on-chain
+- [ ] MEV protection
 
 ### Fase 3: Avanzado
 - [ ] Portfolio rebalancing
 - [ ] Arbitrage detection
 - [ ] Yield farming automation
+- [ ] Copy trading
 
 ## ⚠️ Disclaimer
 
