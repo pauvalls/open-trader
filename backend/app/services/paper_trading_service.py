@@ -1,0 +1,230 @@
+"""
+Paper Trading Service
+
+Service layer for paper trading operations.
+"""
+
+from typing import Optional, Dict, List, Any
+from decimal import Decimal
+from datetime import datetime
+import uuid
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, desc
+
+from app.database import get_db, PaperAccount, PaperOrder, PaperPosition
+from app.services.market import MarketService
+from app.services.alerts import AlertService
+
+market_service = MarketService()
+alert_service = AlertService()
+
+
+class PaperTradingService:
+    """Service for paper trading operations"""
+    
+    async def create_account(
+        self, 
+        initial_balance: float = 10000.0,
+        name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Create a new paper trading account"""
+        async with get_db() as db:
+            account = PaperAccount(
+                id=str(uuid.uuid4()),
+                name=name or f"Account-{uuid.uuid4().hex[:8]}",
+                initial_balance=Decimal(str(initial_balance)),
+                current_balance=Decimal(str(initial_balance)),
+                current_balance_usd=Decimal(str(initial_balance)),
+                unrealized_pnl=Decimal("0"),
+                total_value=Decimal(str(initial_balance))
+            )
+            db.add(account)
+            await db.commit()
+            await db.refresh(account)
+            
+            return {
+                "id": account.id,
+                "name": account.name,
+                "initial_balance": float(account.initial_balance),
+                "current_balance": float(account.current_balance),
+                "created_at": account.created_at.isoformat() if account.created_at else None
+            }
+    
+    async def get_account(self, account_id: str) -> Dict[str, Any]:
+        """Get account details with positions"""
+        async with get_db() as db:
+            result = await db.execute(
+                select(PaperAccount).where(PaperAccount.id == account_id)
+            )
+            account = result.scalar_one_or_none()
+            
+            if not account:
+                raise ValueError(f"Account {account_id} not found")
+            
+            # Get positions
+            positions_result = await db.execute(
+                select(PaperPosition).where(PaperPosition.account_id == account_id)
+            )
+            positions = positions_result.scalars().all()
+            
+            # Calculate current values
+            total_value = Decimal(str(account.current_balance_usd))
+            unrealized_pnl = Decimal("0")
+            positions_data = []
+            
+            for pos in positions:
+                # Get current price
+                try:
+                    ticker = await market_service.get_ticker(pos.symbol)
+                    current_price = Decimal(str(ticker.get('last', pos.entry_price)))
+                except:
+                    current_price = pos.entry_price
+                
+                position_value = pos.amount * current_price
+                pnl = (current_price - pos.entry_price) * pos.amount
+                if pos.side == 'short':
+                    pnl = -pnl
+                
+                total_value += position_value
+                unrealized_pnl += pnl
+                
+                positions_data.append({
+                    "symbol": pos.symbol,
+                    "side": pos.side,
+                    "amount": float(pos.amount),
+                    "entry_price": float(pos.entry_price),
+                    "current_price": float(current_price),
+                    "unrealized_pnl": float(pnl),
+                    "opened_at": pos.opened_at.isoformat() if pos.opened_at else None
+                })
+            
+            return {
+                "id": account.id,
+                "name": account.name,
+                "initial_balance": float(account.initial_balance),
+                "current_balance": float(account.current_balance),
+                "current_balance_usd": float(account.current_balance_usd),
+                "unrealized_pnl": float(unrealized_pnl),
+                "total_value": float(total_value),
+                "open_positions": len(positions),
+                "positions": positions_data
+            }
+    
+    async def list_accounts(self) -> List[Dict[str, Any]]:
+        """List all paper trading accounts"""
+        async with get_db() as db:
+            result = await db.execute(select(PaperAccount))
+            accounts = result.scalars().all()
+            
+            return [
+                {
+                    "id": acc.id,
+                    "name": acc.name,
+                    "initial_balance": float(acc.initial_balance),
+                    "current_balance": float(acc.current_balance),
+                    "current_balance_usd": float(acc.current_balance_usd),
+                    "open_positions": 0  # Would need to count
+                }
+                for acc in accounts
+            ]
+    
+    async def create_order(
+        self,
+        account_id: str,
+        symbol: str,
+        side: str,
+        amount: float
+    ) -> Dict[str, Any]:
+        """Create a paper trading order"""
+        async with get_db() as db:
+            # Get account
+            result = await db.execute(
+                select(PaperAccount).where(PaperAccount.id == account_id)
+            )
+            account = result.scalar_one_or_none()
+            
+            if not account:
+                raise ValueError("Account not found")
+            
+            # Get current price
+            ticker = await market_service.get_ticker(symbol)
+            price = Decimal(str(ticker.get('last', 0)))
+            
+            if price <= 0:
+                raise ValueError(f"Could not get price for {symbol}")
+            
+            amount_decimal = Decimal(str(amount))
+            total = price * amount_decimal
+            fee = total * Decimal("0.001")  # 0.1% fee
+            
+            if side == 'buy':
+                if account.current_balance_usd < total + fee:
+                    raise ValueError("Insufficient balance")
+                
+                account.current_balance_usd -= (total + fee)
+                
+                # Create position
+                position = PaperPosition(
+                    account_id=account_id,
+                    symbol=symbol,
+                    side='long',
+                    amount=amount_decimal,
+                    entry_price=price,
+                    unrealized_pnl=Decimal("0")
+                )
+                db.add(position)
+                
+            elif side == 'sell':
+                # Find position to close
+                pos_result = await db.execute(
+                    select(PaperPosition).where(
+                        PaperPosition.account_id == account_id,
+                        PaperPosition.symbol == symbol
+                    )
+                )
+                position = pos_result.scalar_one_or_none()
+                
+                if not position:
+                    raise ValueError(f"No position found for {symbol}")
+                
+                # Calculate PnL
+                pnl = (price - position.entry_price) * position.amount
+                if position.side == 'short':
+                    pnl = -pnl
+                
+                account.current_balance_usd += (total - fee)
+                account.unrealized_pnl += pnl
+                
+                # Remove position
+                await db.delete(position)
+            
+            # Create order record
+            order = PaperOrder(
+                account_id=account_id,
+                symbol=symbol,
+                side=side,
+                amount=amount_decimal,
+                price=price,
+                fee=fee,
+                status='filled'
+            )
+            db.add(order)
+            await db.commit()
+            
+            # Send alert
+            await alert_service.send_alert(
+                f"📝 Paper Trade: {side.upper()} {amount} {symbol} @ ${float(price):.2f}",
+                level='info'
+            )
+            
+            return {
+                "id": order.id,
+                "symbol": symbol,
+                "side": side,
+                "amount": float(amount),
+                "price": float(price),
+                "fee": float(fee),
+                "total": float(total + fee),
+                "status": "filled"
+            }

@@ -50,8 +50,8 @@ app.add_middleware(
 )
 
 # Routers
+app.include_router(dashboard.router, tags=["Dashboard"])
 app.include_router(health.router, prefix="/health", tags=["Health"])
-app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(paper_trading.router, prefix="/paper", tags=["Paper Trading"])
 app.include_router(market_data.router, prefix="/market", tags=["Market Data"])
 app.include_router(strategies.router, prefix="/strategies", tags=["Estrategias"])

@@ -13,7 +13,7 @@ from ..services.agent_service import (
     AITradingAgent, AgentConfig, get_or_create_agent, 
     get_agent, list_agents, AgentStatus
 )
-from ..services.trading_service import PaperTradingService
+from ..services.paper_trading_service import PaperTradingService
 from ..services.market_multi import MultiMarketService
 
 router = APIRouter(prefix="/agent", tags=["AI Trading Agent"])

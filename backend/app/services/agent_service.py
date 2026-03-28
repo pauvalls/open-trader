@@ -21,7 +21,7 @@ import random
 from fastapi import BackgroundTasks
 import httpx
 
-from ..services.trading_service import PaperTradingService
+from ..services.paper_trading_service import PaperTradingService
 from ..services.market_multi import MultiMarketService
 from ..strategies.rsi_strategy import RSIStrategy
 from ..strategies.macd_strategy import MACDStrategy

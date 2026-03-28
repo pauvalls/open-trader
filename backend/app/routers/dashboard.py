@@ -695,6 +695,6 @@ async def dashboard_status():
     return {
         "status": "running",
         "mode": "paper_trading",
-        "version": "0.3.1",
-        "features": ["multi-dex", "advanced-orders", "realtime-charts", "multi-provider"]
+        "version": "0.4.0",
+        "features": ["multi-dex", "advanced-orders", "realtime-charts", "multi-provider", "ai-agent"]
     }
