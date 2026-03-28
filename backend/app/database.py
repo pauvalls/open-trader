@@ -197,10 +197,72 @@ class AgentDecisionHistory(Base):
     timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
 
+async def run_migrations():
+    """Run migrations to add missing columns"""
+    from sqlalchemy import text
+    
+    async with engine.begin() as conn:
+        # Check if we're using PostgreSQL
+        if "postgresql" in str(engine.url):
+            # Add missing columns to paper_positions if they don't exist
+            columns_to_add = [
+                ("stop_loss_price", "FLOAT"),
+                ("take_profit_price", "FLOAT"),
+                ("stop_loss_pct", "FLOAT"),
+                ("take_profit_pct", "FLOAT"),
+                ("sl_tp_triggered", "VARCHAR(50)"),
+                ("sl_tp_triggered_at", "TIMESTAMP"),
+            ]
+            
+            for column_name, column_type in columns_to_add:
+                try:
+                    await conn.execute(text(f"""
+                        DO $$
+                        BEGIN
+                            IF NOT EXISTS (
+                                SELECT 1 FROM information_schema.columns 
+                                WHERE table_name = 'paper_positions' 
+                                AND column_name = '{column_name}'
+                            ) THEN
+                                ALTER TABLE paper_positions ADD COLUMN {column_name} {column_type};
+                            END IF;
+                        END $$;
+                    """))
+                except Exception as e:
+                    print(f"Migration note: {e}")
+            
+            # Add missing columns to paper_accounts if they don't exist
+            account_columns = [
+                ("is_active", "BOOLEAN DEFAULT TRUE"),
+            ]
+            
+            for column_name, column_type in account_columns:
+                try:
+                    await conn.execute(text(f"""
+                        DO $$
+                        BEGIN
+                            IF NOT EXISTS (
+                                SELECT 1 FROM information_schema.columns 
+                                WHERE table_name = 'paper_accounts' 
+                                AND column_name = '{column_name}'
+                            ) THEN
+                                ALTER TABLE paper_accounts ADD COLUMN {column_name} {column_type};
+                            END IF;
+                        END $$;
+                    """))
+                except Exception as e:
+                    print(f"Migration note: {e}")
+            
+            print("✅ Database migrations completed")
+
+
 async def init_db():
     """Initialize database tables"""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Run migrations for missing columns
+    await run_migrations()
 
 
 async def get_db():
