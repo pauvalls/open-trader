@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Professional Trading Color Palette */
             --bg-primary: #0d1117;
             --bg-secondary: #161b22;
             --bg-tertiary: #21262d;
@@ -21,7 +20,6 @@
             --text-secondary: #8b949e;
             --text-muted: #6e7681;
             
-            /* Trading Colors */
             --color-long: #238636;
             --color-long-hover: #2ea043;
             --color-long-bg: rgba(35, 134, 54, 0.15);
@@ -33,16 +31,13 @@
             --color-profit: #3fb950;
             --color-loss: #f85149;
             
-            /* Accent */
             --accent-primary: #58a6ff;
             --accent-secondary: #79c0ff;
             --accent-warning: #d29922;
             
-            /* Typography */
             --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
             
-            /* Spacing */
             --space-xs: 4px;
             --space-sm: 8px;
             --space-md: 12px;
@@ -50,12 +45,10 @@
             --space-xl: 24px;
             --space-2xl: 32px;
             
-            /* Border Radius */
             --radius-sm: 4px;
             --radius-md: 6px;
             --radius-lg: 8px;
             
-            /* Shadows */
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
             --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
         }
@@ -188,6 +181,11 @@
             background: var(--color-short-hover);
         }
         
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         /* Main Layout */
         .main-container {
             padding-top: 56px;
@@ -197,7 +195,7 @@
         
         /* Sidebar */
         .sidebar {
-            width: 240px;
+            width: 260px;
             background: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
             padding: var(--space-lg);
@@ -321,7 +319,7 @@
         
         /* Content Area */
         .content {
-            margin-left: 240px;
+            margin-left: 260px;
             flex: 1;
             padding: var(--space-xl);
         }
@@ -333,7 +331,7 @@
         /* Grid Layouts */
         .grid-2 {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: var(--space-xl);
         }
         
@@ -374,7 +372,7 @@
         /* Trading Panel */
         .trading-grid {
             display: grid;
-            grid-template-columns: 1fr 340px;
+            grid-template-columns: 1fr 360px;
             gap: var(--space-xl);
         }
         
@@ -468,7 +466,7 @@
             letter-spacing: 0.5px;
         }
         
-        .form-input {
+        .form-input, .form-select {
             width: 100%;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
@@ -480,7 +478,7 @@
             transition: border-color 0.15s ease;
         }
         
-        .form-input:focus {
+        .form-input:focus, .form-select:focus {
             outline: none;
             border-color: var(--accent-primary);
         }
@@ -642,6 +640,51 @@
         .status-stopped { background: var(--text-muted); }
         .status-error { background: var(--color-loss); box-shadow: 0 0 8px var(--color-loss); }
         
+        /* Config Sections */
+        .config-section {
+            margin-bottom: var(--space-xl);
+            padding-bottom: var(--space-xl);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .config-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .config-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .toggle-group {
+            display: flex;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+        }
+        
+        .toggle-btn {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .toggle-btn.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: #000;
+        }
+        
         /* Empty States */
         .empty-state {
             text-align: center;
@@ -686,17 +729,74 @@
         .toast-error { border-left-color: var(--color-loss); }
         .toast-warning { border-left-color: var(--accent-warning); }
         
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            text-align: center;
+        }
+        
+        .stat-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .stat-number {
+            font-family: var(--font-mono);
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
         /* Responsive */
         @media (max-width: 1200px) {
             .trading-grid { grid-template-columns: 1fr; }
             .grid-2 { grid-template-columns: 1fr; }
             .grid-3 { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
         
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .content { margin-left: 0; }
             .header { padding: 0 var(--space-md); }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Loading */
+        .chart-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .chart-loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 12px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -788,6 +888,8 @@
                                 <option value="SOL/USDT">SOL/USDT</option>
                                 <option value="AVAX/USDT">AVAX/USDT</option>
                                 <option value="ARB/USDT">ARB/USDT</option>
+                                <option value="OP/USDT">OP/USDT</option>
+                                <option value="LINK/USDT">LINK/USDT</option>
                             </select>
                             <select class="timeframe-select" id="timeframeSelect" onchange="updateChart()">
                                 <option value="15m">15m</option>
@@ -800,7 +902,8 @@
                                 <span class="price-change" id="priceChange">0.00%</span>
                             </div>
                         </div>
-                        <canvas id="priceChart"></canvas>
+                        <div id="chartLoading" class="chart-loading">Loading chart...</div>
+                        <canvas id="priceChart" style="height:400px;display:none"></canvas>
                     </div>
                     
                     <!-- Order Panel -->
@@ -892,7 +995,7 @@
                         <div class="table-container" id="positionsTable">
                             <div class="empty-state">
                                 <div class="empty-icon">📊</div>
-                                <p>No open positions</p>
+                                <p data-i18n="noPositions">No open positions</p>
                             </div>
                         </div>
                     </div>
@@ -911,7 +1014,7 @@
                         <div class="table-container" id="ordersTable">
                             <div class="empty-state">
                                 <div class="empty-icon">📭</div>
-                                <p>No pending orders</p>
+                                <p data-i18n="noOrders">No pending orders</p>
                             </div>
                         </div>
                     </div>
@@ -930,7 +1033,7 @@
                         <div class="table-container" id="historyTable">
                             <div class="empty-state">
                                 <div class="empty-icon">📈</div>
-                                <p>No trades yet</p>
+                                <p data-i18n="noHistory">No trades yet</p>
                             </div>
                         </div>
                     </div>
@@ -939,6 +1042,26 @@
             
             <!-- Agent Tab -->
             <div id="agentTab" class="tab-content">
+                <!-- Agent Stats -->
+                <div class="stats-grid" id="agentStats" style="display:none">
+                    <div class="stat-card">
+                        <div class="stat-title">Trades Today</div>
+                        <div class="stat-number" id="statTrades">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Open Positions</div>
+                        <div class="stat-number" id="statPositions">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Win Rate</div>
+                        <div class="stat-number" id="statWinRate">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Total P&L</div>
+                        <div class="stat-number" id="statPnL">$0</div>
+                    </div>
+                </div>
+                
                 <div class="grid-2">
                     <div>
                         <div class="card">
@@ -975,18 +1098,91 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div class="form-group">
-                                    <label class="form-label" data-i18n="selectPreset">Select Preset</label>
-                                    <select class="form-input" id="agentPreset" onchange="applyPreset()">
-                                        <option value="conservative">Conservative</option>
-                                        <option value="balanced" selected>Balanced</option>
-                                        <option value="aggressive">Aggressive</option>
+                                <!-- Presets -->
+                                <div class="config-section">
+                                    <div class="config-title">Select Preset</div>
+                                    <div class="toggle-group">
+                                        <button class="toggle-btn" id="presetConservative" onclick="setPreset('conservative')">Conservative</button>
+                                        <button class="toggle-btn active" id="presetBalanced" onclick="setPreset('balanced')">Balanced</button>
+                                        <button class="toggle-btn" id="presetAggressive" onclick="setPreset('aggressive')">Aggressive</button>
+                                        <button class="toggle-btn" id="presetAI" onclick="setPreset('ai')">AI Enhanced</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Symbols -->
+                                <div class="config-section">
+                                    <div class="config-title">Trading Symbols</div>
+                                    <div class="toggle-group" id="symbolToggles">
+                                        <button class="toggle-btn active" onclick="toggleSymbol(this, 'BTC/USDT')">BTC</button>
+                                        <button class="toggle-btn active" onclick="toggleSymbol(this, 'ETH/USDT')">ETH</button>
+                                        <button class="toggle-btn" onclick="toggleSymbol(this, 'SOL/USDT')">SOL</button>
+                                        <button class="toggle-btn" onclick="toggleSymbol(this, 'AVAX/USDT')">AVAX</button>
+                                        <button class="toggle-btn" onclick="toggleSymbol(this, 'ARB/USDT')">ARB</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Strategies -->
+                                <div class="config-section">
+                                    <div class="config-title">Active Strategies</div>
+                                    <div class="toggle-group" id="strategyToggles">
+                                        <button class="toggle-btn active" onclick="toggleStrategy(this, 'rsi')">RSI</button>
+                                        <button class="toggle-btn active" onclick="toggleStrategy(this, 'macd')">MACD</button>
+                                        <button class="toggle-btn active" onclick="toggleStrategy(this, 'bollinger')">Bollinger</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Risk Settings -->
+                                <div class="config-section">
+                                    <div class="config-title">Risk Settings</div>
+                                    <div class="grid-2" style="gap:12px">
+                                        <div class="form-group" style="margin:0">
+                                            <label class="form-label">Max $/Position</label>
+                                            <input type="number" class="form-input" id="maxPosition" value="1000">
+                                        </div>
+                                        <div class="form-group" style="margin:0">
+                                            <label class="form-label">Max Positions</label>
+                                            <input type="number" class="form-input" id="maxPositions" value="3">
+                                        </div>
+                                        <div class="form-group" style="margin:0">
+                                            <label class="form-label">Max Daily Trades</label>
+                                            <input type="number" class="form-input" id="maxDailyTrades" value="10">
+                                        </div>
+                                        <div class="form-group" style="margin:0">
+                                            <label class="form-label">Consensus (1-3)</label>
+                                            <input type="number" class="form-input" id="consensusThreshold" value="2" min="1" max="3">
+                                        </div>
+                                        <div class="form-group" style="margin:0">
+                                            <label class="form-label">Stop Loss %</label>
+                                            <input type="number" class="form-input" id="stopLossPct" value="5" step="0.5">
+                                        </div>
+                                        <div class="form-group" style="margin:0">
+                                            <label class="form-label">Take Profit %</label>
+                                            <input type="number" class="form-input" id="takeProfitPct" value="10" step="0.5">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Check Interval -->
+                                <div class="config-section">
+                                    <div class="config-title">Check Interval</div>
+                                    <select class="form-select" id="checkInterval">
+                                        <option value="5">Every 5 minutes</option>
+                                        <option value="15" selected>Every 15 minutes</option>
+                                        <option value="30">Every 30 minutes</option>
+                                        <option value="60">Every 1 hour</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label" data-i18n="maxPositionUSD">Max $/Position</label>
-                                    <input type="number" class="form-input" id="maxPosition" value="1000">
+                                
+                                <!-- Kimi API Key (optional) -->
+                                <div class="config-section">
+                                    <div class="config-title">Kimi API Key (Optional)</div>
+                                    <input type="password" class="form-input" id="kimiApiKey" placeholder="Enter API key for AI-enhanced mode">
+                                    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">Leave empty to use technical analysis only</p>
                                 </div>
+                                
+                                <button class="btn btn-primary" style="width:100%" onclick="saveAgentConfig()">
+                                    <span>💾</span> Save Configuration
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1067,6 +1263,11 @@
         let orderSide = 'long';
         let priceChart = null;
         let currentPrice = 0;
+        let agentConfig = {
+            symbols: ['BTC/USDT', 'ETH/USDT'],
+            strategies: ['rsi', 'macd', 'bollinger'],
+            preset: 'balanced'
+        };
         
         // ===== Navigation =====
         function showTab(tab) {
@@ -1100,61 +1301,100 @@
             const symbol = document.getElementById('symbolSelect').value;
             const timeframe = document.getElementById('timeframeSelect').value;
             
+            // Show loading, hide chart
+            document.getElementById('chartLoading').style.display = 'flex';
+            document.getElementById('priceChart').style.display = 'none';
+            
             try {
-                const res = await fetch(`${API_BASE}/market/candles?symbol=${symbol}&timeframe=${timeframe}&limit=100`);
+                const res = await fetch(`${API_BASE}/market/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=100`);
                 const data = await res.json();
                 
-                if (data.candles) {
-                    renderChart(data.candles);
-                    currentPrice = data.candles[data.candles.length - 1].close;
+                // FIX: API returns data.data, not data.candles
+                const candles = data.data || data.candles;
+                
+                if (candles && candles.length > 0) {
+                    // Hide loading, show chart
+                    document.getElementById('chartLoading').style.display = 'none';
+                    document.getElementById('priceChart').style.display = 'block';
+                    
+                    renderChart(candles, symbol, data.provider);
+                    currentPrice = candles[candles.length - 1].close;
                     document.getElementById('currentPrice').textContent = `$${currentPrice.toLocaleString()}`;
                     updateRiskCalc();
+                } else {
+                    document.getElementById('chartLoading').textContent = 'No data available';
                 }
             } catch (e) {
                 console.error('Chart error:', e);
+                document.getElementById('chartLoading').textContent = 'Error loading chart';
             }
         }
         
-        function renderChart(candles) {
+        function renderChart(candles, symbol, provider) {
             const ctx = document.getElementById('priceChart').getContext('2d');
             
             if (priceChart) priceChart.destroy();
             
-            const labels = candles.map(c => new Date(c.timestamp).toLocaleTimeString());
-            const prices = candles.map(c => c.close);
+            // Show last 50 candles for cleaner chart
+            const recentCandles = candles.slice(-50);
+            const labels = recentCandles.map(c => new Date(c.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+            const prices = recentCandles.map(c => c.close);
+            
+            // Gradient based on trend
+            const startPrice = prices[0];
+            const endPrice = prices[prices.length - 1];
+            const isUp = endPrice >= startPrice;
             
             const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(88, 166, 255, 0.2)');
-            gradient.addColorStop(1, 'rgba(88, 166, 255, 0)');
+            if (isUp) {
+                gradient.addColorStop(0, 'rgba(35, 134, 54, 0.3)');
+                gradient.addColorStop(1, 'rgba(35, 134, 54, 0)');
+            } else {
+                gradient.addColorStop(0, 'rgba(218, 54, 51, 0.3)');
+                gradient.addColorStop(1, 'rgba(218, 54, 51, 0)');
+            }
             
             priceChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Price',
+                        label: `${symbol} ${provider ? '(' + provider + ')' : ''}`,
                         data: prices,
-                        borderColor: '#58a6ff',
+                        borderColor: isUp ? '#238636' : '#da3633',
                         backgroundColor: gradient,
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0,
+                        pointHoverRadius: 4,
                         borderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { 
+                            display: true,
+                            labels: { color: '#8b949e', font: { size: 11 } }
+                        } 
+                    },
                     scales: {
                         x: { 
                             grid: { color: '#30363d' },
-                            ticks: { color: '#8b949e', maxTicksLimit: 6 }
+                            ticks: { color: '#8b949e', maxTicksLimit: 6, font: { size: 11 } }
                         },
                         y: {
                             grid: { color: '#30363d' },
-                            ticks: { color: '#8b949e' }
+                            ticks: { 
+                                color: '#8b949e',
+                                callback: v => '$' + v.toLocaleString()
+                            }
                         }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
                     }
                 }
             });
@@ -1162,11 +1402,13 @@
         
         // ===== Risk Calculator =====
         document.getElementById('amountInput').addEventListener('input', updateRiskCalc);
+        document.getElementById('stopLossPct').addEventListener('input', updateRiskCalc);
+        document.getElementById('takeProfitPct').addEventListener('input', updateRiskCalc);
         
         function updateRiskCalc() {
             const amount = parseFloat(document.getElementById('amountInput').value) || 0;
-            const slPct = 5;
-            const tpPct = 10;
+            const slPct = parseFloat(document.getElementById('stopLossPct')?.value) || 5;
+            const tpPct = parseFloat(document.getElementById('takeProfitPct')?.value) || 10;
             
             if (currentPrice && amount) {
                 const sl = orderSide === 'long' 
@@ -1181,6 +1423,12 @@
                 document.getElementById('calcTP').textContent = `$${tp.toFixed(2)}`;
                 document.getElementById('calcRR').textContent = `1:${(tpPct/slPct).toFixed(1)}`;
                 document.getElementById('calcRisk').textContent = `$${(amount * slPct/100).toFixed(2)}`;
+            } else {
+                document.getElementById('calcEntry').textContent = '-';
+                document.getElementById('calcSL').textContent = '-';
+                document.getElementById('calcTP').textContent = '-';
+                document.getElementById('calcRR').textContent = '-';
+                document.getElementById('calcRisk').textContent = '-';
             }
         }
         
@@ -1230,12 +1478,18 @@
             const symbol = document.getElementById('symbolSelect').value;
             
             try {
-                const res = await fetch(`${API_BASE}/strategies/scan?symbol=${symbol}`);
+                const res = await fetch(`${API_BASE}/strategies/scan?symbol=${encodeURIComponent(symbol)}`);
                 const data = await res.json();
                 
                 updateSignal('rsi', data.rsi?.signal);
                 updateSignal('macd', data.macd?.signal);
                 updateSignal('bollinger', data.bollinger?.signal);
+                
+                if (data.price) {
+                    currentPrice = data.price;
+                    document.getElementById('currentPrice').textContent = `$${currentPrice.toLocaleString()}`;
+                    updateRiskCalc();
+                }
             } catch (e) {
                 console.error('Scan error:', e);
             }
@@ -1243,7 +1497,8 @@
         
         function updateSignal(name, signal) {
             const el = document.getElementById(name + 'Signal');
-            el.textContent = signal ? signal.toUpperCase() : '-';
+            const textMap = { buy: 'BUY', sell: 'SELL', hold: 'HOLD', neutral: '-' };
+            el.textContent = textMap[signal] || '-';
             el.className = 'signal-value ' + (signal === 'buy' ? 'signal-buy' : signal === 'sell' ? 'signal-sell' : 'signal-neutral');
         }
         
@@ -1254,18 +1509,17 @@
                 const data = await res.json();
                 
                 const select = document.getElementById('accountSelect');
-                select.innerHTML = '<option value="">' + t('selectAccount') + '</option>';
+                select.innerHTML = `<option value="">${t('selectAccount')}</option>`;
                 
                 data.forEach(acc => {
                     const opt = document.createElement('option');
                     opt.value = acc.id;
-                    opt.textContent = `${acc.name} ($${acc.current_balance_usd.toFixed(0)})`;
+                    opt.textContent = `${acc.name || acc.id.slice(0,8)} ($${acc.current_balance?.toFixed(0) || 0})`;
                     select.appendChild(opt);
                 });
                 
-                // Restore saved account
                 const saved = localStorage.getItem('currentAccount');
-                if (saved) {
+                if (saved && data.find(a => a.id === saved)) {
                     select.value = saved;
                     selectAccount(saved);
                 }
@@ -1309,7 +1563,7 @@
                 const data = await res.json();
                 
                 document.getElementById('balanceDisplay').style.display = 'block';
-                document.getElementById('totalBalance').textContent = `$${data.total_value?.toLocaleString() || '0.00'}`;
+                document.getElementById('totalBalance').textContent = `$${(data.total_value || 0).toLocaleString()}`;
                 
                 const pnl = data.unrealized_pnl || 0;
                 const pnlEl = document.getElementById('balanceChange');
@@ -1381,6 +1635,17 @@
         
         // ===== Orders & History =====
         async function loadOrders() {
+            if (!currentAccount) {
+                document.getElementById('ordersTable').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <p>${t('noOrders')}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // TODO: Load pending orders from API
             document.getElementById('ordersTable').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📭</div>
@@ -1400,7 +1665,7 @@
                 return;
             }
             
-            // TODO: Load actual order history
+            // TODO: Load order history from API
             document.getElementById('historyTable').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">📈</div>
@@ -1409,33 +1674,203 @@
             `;
         }
         
-        // ===== Agent =====
-        function startAgent() {
-            showToast('Agent started', 'success');
-            document.getElementById('agentStatusIndicator').className = 'status-indicator status-running';
-            document.getElementById('agentStatusText').textContent = 'Running';
-            document.getElementById('agentBadge').style.display = 'inline';
-            document.getElementById('startAgentBtn').disabled = true;
-            document.getElementById('stopAgentBtn').disabled = false;
+        // ===== Agent Configuration =====
+        const PRESETS = {
+            conservative: {
+                consensus: 3, maxPosition: 500, maxPositions: 2, maxDailyTrades: 5,
+                sl: 3, tp: 6, interval: 30
+            },
+            balanced: {
+                consensus: 2, maxPosition: 1000, maxPositions: 3, maxDailyTrades: 10,
+                sl: 5, tp: 10, interval: 15
+            },
+            aggressive: {
+                consensus: 1, maxPosition: 2000, maxPositions: 5, maxDailyTrades: 20,
+                sl: 8, tp: 15, interval: 5
+            },
+            ai: {
+                consensus: 2, maxPosition: 1000, maxPositions: 3, maxDailyTrades: 10,
+                sl: 5, tp: 10, interval: 15, useAI: true
+            }
+        };
+        
+        function setPreset(name) {
+            agentConfig.preset = name;
+            const p = PRESETS[name];
+            
+            // Update UI
+            document.querySelectorAll('.toggle-btn[id^="preset"]').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('preset' + name.charAt(0).toUpperCase() + name.slice(1))?.classList.add('active');
+            
+            // Apply values
+            if (p) {
+                document.getElementById('consensusThreshold').value = p.consensus;
+                document.getElementById('maxPosition').value = p.maxPosition;
+                document.getElementById('maxPositions').value = p.maxPositions;
+                document.getElementById('maxDailyTrades').value = p.maxDailyTrades;
+                document.getElementById('stopLossPct').value = p.sl;
+                document.getElementById('takeProfitPct').value = p.tp;
+                document.getElementById('checkInterval').value = p.interval;
+            }
         }
         
-        function stopAgent() {
-            showToast('Agent stopped', 'info');
-            document.getElementById('agentStatusIndicator').className = 'status-indicator status-stopped';
-            document.getElementById('agentStatusText').textContent = 'Stopped';
-            document.getElementById('agentBadge').style.display = 'none';
-            document.getElementById('startAgentBtn').disabled = false;
-            document.getElementById('stopAgentBtn').disabled = true;
+        function toggleSymbol(btn, symbol) {
+            btn.classList.toggle('active');
+            const isActive = btn.classList.contains('active');
+            if (isActive) {
+                if (!agentConfig.symbols.includes(symbol)) agentConfig.symbols.push(symbol);
+            } else {
+                agentConfig.symbols = agentConfig.symbols.filter(s => s !== symbol);
+            }
         }
         
-        function applyPreset() {
-            const preset = document.getElementById('agentPreset').value;
-            const values = {
-                conservative: 500,
-                balanced: 1000,
-                aggressive: 2000
-            };
-            document.getElementById('maxPosition').value = values[preset];
+        function toggleStrategy(btn, strategy) {
+            btn.classList.toggle('active');
+            const isActive = btn.classList.contains('active');
+            if (isActive) {
+                if (!agentConfig.strategies.includes(strategy)) agentConfig.strategies.push(strategy);
+            } else {
+                agentConfig.strategies = agentConfig.strategies.filter(s => s !== strategy);
+            }
+        }
+        
+        function saveAgentConfig() {
+            agentConfig.maxPosition = parseFloat(document.getElementById('maxPosition').value);
+            agentConfig.maxPositions = parseInt(document.getElementById('maxPositions').value);
+            agentConfig.maxDailyTrades = parseInt(document.getElementById('maxDailyTrades').value);
+            agentConfig.consensus = parseInt(document.getElementById('consensusThreshold').value);
+            agentConfig.sl = parseFloat(document.getElementById('stopLossPct').value);
+            agentConfig.tp = parseFloat(document.getElementById('takeProfitPct').value);
+            agentConfig.interval = parseInt(document.getElementById('checkInterval').value);
+            agentConfig.kimiApiKey = document.getElementById('kimiApiKey').value;
+            
+            localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+            showToast('Configuration saved', 'success');
+        }
+        
+        // ===== Agent Control =====
+        async function startAgent() {
+            if (!currentAccount) {
+                showToast('Select an account first', 'error');
+                return;
+            }
+            
+            if (agentConfig.symbols.length === 0) {
+                showToast('Select at least one trading symbol', 'error');
+                return;
+            }
+            
+            if (agentConfig.strategies.length === 0) {
+                showToast('Select at least one strategy', 'error');
+                return;
+            }
+            
+            // Call API to start agent
+            try {
+                const agentId = `agent_${currentAccount.slice(0,8)}`;
+                const res = await fetch(`${API_BASE}/agent/create/${agentId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        account_id: currentAccount,
+                        symbols: agentConfig.symbols,
+                        consensus_threshold: agentConfig.consensus,
+                        max_position_size_usd: agentConfig.maxPosition,
+                        max_positions: agentConfig.maxPositions,
+                        max_daily_trades: agentConfig.maxDailyTrades,
+                        stop_loss_pct: agentConfig.sl,
+                        take_profit_pct: agentConfig.tp,
+                        check_interval_minutes: agentConfig.interval,
+                        use_kimi_api: !!agentConfig.kimiApiKey,
+                        kimi_api_key: agentConfig.kimiApiKey || undefined
+                    })
+                });
+                
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Failed to create agent');
+                }
+                
+                // Start the agent
+                const startRes = await fetch(`${API_BASE}/agent/control/${agentId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'start' })
+                });
+                
+                if (!startRes.ok) {
+                    const err = await startRes.json();
+                    throw new Error(err.detail || 'Failed to start agent');
+                }
+                
+                showToast('Agent started', 'success');
+                document.getElementById('agentStatusIndicator').className = 'status-indicator status-running';
+                document.getElementById('agentStatusText').textContent = 'Running';
+                document.getElementById('agentStatusDetail').textContent = `Trading ${agentConfig.symbols.join(', ')}`;
+                document.getElementById('agentBadge').style.display = 'inline';
+                document.getElementById('agentStats').style.display = 'grid';
+                document.getElementById('startAgentBtn').disabled = true;
+                document.getElementById('stopAgentBtn').disabled = false;
+                
+                // Start polling
+                startAgentPolling(agentId);
+                
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+        }
+        
+        async function stopAgent() {
+            try {
+                const agentId = `agent_${currentAccount.slice(0,8)}`;
+                const res = await fetch(`${API_BASE}/agent/control/${agentId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'stop' })
+                });
+                
+                showToast('Agent stopped', 'info');
+                document.getElementById('agentStatusIndicator').className = 'status-indicator status-stopped';
+                document.getElementById('agentStatusText').textContent = 'Stopped';
+                document.getElementById('agentStatusDetail').textContent = 'Configure and start the agent';
+                document.getElementById('agentBadge').style.display = 'none';
+                document.getElementById('agentStats').style.display = 'none';
+                document.getElementById('startAgentBtn').disabled = false;
+                document.getElementById('stopAgentBtn').disabled = true;
+                
+                stopAgentPolling();
+            } catch (e) {
+                showToast('Error stopping agent', 'error');
+            }
+        }
+        
+        let agentPollInterval = null;
+        
+        function startAgentPolling(agentId) {
+            stopAgentPolling();
+            agentPollInterval = setInterval(() => pollAgentStatus(agentId), 30000);
+        }
+        
+        function stopAgentPolling() {
+            if (agentPollInterval) {
+                clearInterval(agentPollInterval);
+                agentPollInterval = null;
+            }
+        }
+        
+        async function pollAgentStatus(agentId) {
+            try {
+                const res = await fetch(`${API_BASE}/agent/status/${agentId}`);
+                if (!res.ok) return;
+                
+                const data = await res.json();
+                document.getElementById('statTrades').textContent = data.daily_trades || 0;
+                document.getElementById('statPositions').textContent = data.positions_count || 0;
+                document.getElementById('statWinRate').textContent = data.win_rate ? `${(data.win_rate * 100).toFixed(1)}%` : '-';
+                document.getElementById('statPnL').textContent = `$${(data.total_pnl || 0).toFixed(2)}`;
+            } catch (e) {
+                console.error('Agent poll error:', e);
+            }
         }
         
         // ===== Toast Notifications =====
@@ -1460,6 +1895,15 @@
         
         // ===== Init =====
         document.addEventListener('DOMContentLoaded', () => {
+            // Load saved config
+            const savedConfig = localStorage.getItem('agentConfig');
+            if (savedConfig) {
+                try {
+                    agentConfig = { ...agentConfig, ...JSON.parse(savedConfig) };
+                    setPreset(agentConfig.preset || 'balanced');
+                } catch (e) {}
+            }
+            
             updateUI();
             loadAccounts();
             updateChart();
