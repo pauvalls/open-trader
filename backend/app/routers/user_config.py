@@ -76,7 +76,6 @@ class ApiKeyResponse(BaseModel):
 
 @router.get("/{account_id}", response_model=UserConfigResponse)
 async def get_config(account_id: str, db: AsyncSession = Depends(get_db)):
-async def get_config(account_id: str, db: AsyncSession = Depends(get_db)):
     """
     Get user configuration for an account.
     
