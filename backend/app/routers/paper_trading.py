@@ -84,60 +84,75 @@ async def get_account(
     db: AsyncSession = Depends(get_db)
 ):
     """Obtener estado de cuenta"""
-    result = await db.execute(
-        select(PaperAccount).where(PaperAccount.id == account_id)
-    )
-    account = result.scalar_one_or_none()
-    
-    if not account:
-        raise HTTPException(status_code=404, detail="Cuenta no encontrada")
-    
-    # Calcular P&L de posiciones abiertas
-    positions_result = await db.execute(
-        select(PaperPosition).where(
-            PaperPosition.account_id == account_id,
-            PaperPosition.is_open == True
+    try:
+        result = await db.execute(
+            select(PaperAccount).where(PaperAccount.id == account_id)
         )
-    )
-    positions = positions_result.scalars().all()
-    
-    # Actualizar precios actuales
-    total_unrealized_pnl = 0.0
-    positions_data = []
-    
-    for pos in positions:
-        current_price = await market_service.get_price(pos.symbol)
-        if current_price:
-            pos.current_price = current_price
-            pos.unrealized_pnl = (current_price - pos.entry_price) * pos.amount
-            if pos.side == "sell":
-                pos.unrealized_pnl = -pos.unrealized_pnl
-            total_unrealized_pnl += pos.unrealized_pnl
+        account = result.scalar_one_or_none()
         
-        positions_data.append({
-            "id": pos.id,
-            "symbol": pos.symbol,
-            "side": pos.side,
-            "amount": pos.amount,
-            "entry_price": pos.entry_price,
-            "current_price": pos.current_price,
-            "unrealized_pnl": pos.unrealized_pnl
-        })
-    
-    await db.commit()
-    
-    return {
-        "id": account.id,
-        "initial_balance": account.initial_balance_usd,
-        "current_balance": account.current_balance_usd,
-        "total_value": account.current_balance_usd + sum(
-            p["amount"] * (p["current_price"] or p["entry_price"]) 
-            for p in positions_data
-        ),
-        "unrealized_pnl": total_unrealized_pnl,
-        "open_positions": len(positions),
-        "positions": positions_data
-    }
+        if not account:
+            raise HTTPException(status_code=404, detail="Cuenta no encontrada")
+        
+        # Calcular P&L de posiciones abiertas
+        positions_result = await db.execute(
+            select(PaperPosition).where(
+                PaperPosition.account_id == account_id,
+                PaperPosition.is_open == True
+            )
+        )
+        positions = positions_result.scalars().all()
+        
+        # Actualizar precios actuales
+        total_unrealized_pnl = 0.0
+        positions_data = []
+        
+        for pos in positions:
+            try:
+                current_price = await market_service.get_price(pos.symbol)
+                if current_price:
+                    pos.current_price = current_price
+                    pos.unrealized_pnl = (current_price - pos.entry_price) * pos.amount
+                    if pos.side == "sell":
+                        pos.unrealized_pnl = -pos.unrealized_pnl
+                    total_unrealized_pnl += pos.unrealized_pnl
+            except Exception as e:
+                print(f"Error getting price for {pos.symbol}: {e}")
+            
+            positions_data.append({
+                "id": pos.id,
+                "symbol": pos.symbol,
+                "side": pos.side,
+                "amount": pos.amount,
+                "entry_price": pos.entry_price,
+                "current_price": getattr(pos, 'current_price', None),
+                "unrealized_pnl": getattr(pos, 'unrealized_pnl', 0)
+            })
+        
+        try:
+            await db.commit()
+        except Exception as e:
+            print(f"Error committing: {e}")
+            await db.rollback()
+        
+        return {
+            "id": account.id,
+            "initial_balance": account.initial_balance_usd,
+            "current_balance": account.current_balance_usd,
+            "total_value": account.current_balance_usd + sum(
+                p["amount"] * (p["current_price"] or p["entry_price"]) 
+                for p in positions_data
+            ),
+            "unrealized_pnl": total_unrealized_pnl,
+            "open_positions": len(positions),
+            "positions": positions_data
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error in get_account: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 
 @router.post("/order")
