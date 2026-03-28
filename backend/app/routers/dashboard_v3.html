@@ -2303,7 +2303,7 @@
             if (!currentAccount) return;
             
             try {
-                const res = await fetch(`${API_BASE}/config/${currentAccount}`);
+                const res = await fetch(`${API_BASE}/user/${currentAccount}`);
                 if (!res.ok) return;
                 
                 const config = await res.json();
@@ -2365,7 +2365,7 @@
             if (!currentAccount) return;
             
             try {
-                const res = await fetch(`${API_BASE}/config/${currentAccount}`, {
+                const res = await fetch(`${API_BASE}/user/${currentAccount}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updates)
