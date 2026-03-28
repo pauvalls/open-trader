@@ -1,7 +1,7 @@
 # ============================================
 # Open Trader - Production Dockerfile
 # Multi-stage build for optimized image size
-# Version: 0.4.0 - AI Agent Edition
+# Version: 0.5.0 - i18n + PostgreSQL Edition
 # ============================================
 
 # Stage 1: Builder
@@ -19,8 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-# Force rebuild cache - timestamp: 2026-03-28-19-15
-RUN echo "Build version 0.4.0 - AI Agent - $(date)" > /tmp/build_version
+# Force rebuild cache - timestamp: 2026-03-28-19-45
+RUN echo "Build version 0.5.0 - i18n + PostgreSQL - $(date)" > /tmp/build_version
 
 # Stage 2: Production
 FROM python:3.11-slim as production

@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Open Trader API",
     description="Sistema de trading algorítmico con paper trading, Multi-DEX y Agente AI",
-    version="0.4.0",
+    version="0.5.0",
     lifespan=lifespan,
     docs_url="/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
     redoc_url="/redoc" if os.getenv("DEBUG", "false").lower() == "true" else None
@@ -76,9 +76,9 @@ async def root():
 async def version():
     """Get current API version"""
     return {
-        "version": "0.4.0",
+        "version": "0.5.0",
         "release_date": "2026-03-28",
-        "features": ["paper-trading", "multi-dex", "ai-agent", "auto-trading"],
+        "features": ["paper-trading", "multi-dex", "ai-agent", "auto-trading", "i18n", "postgresql"],
         "changelog": "https://github.com/pauvalls/open-trader/blob/main/CHANGELOG.md"
     }
 
