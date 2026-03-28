@@ -25,8 +25,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Open Trader API",
-    description="Sistema de trading algorítmico con paper trading y Uniswap V3",
-    version="0.2.1",
+    description="Sistema de trading algorítmico con paper trading y Multi-DEX",
+    version="0.3.0",
     lifespan=lifespan,
     docs_url="/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
     redoc_url="/redoc" if os.getenv("DEBUG", "false").lower() == "true" else None

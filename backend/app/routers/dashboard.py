@@ -13,7 +13,6 @@ DASHBOARD_HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open Trader - Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -477,18 +476,39 @@ DASHBOARD_HTML = """
         async function updateChart() {
             const symbol = document.getElementById('symbolSelect').value;
             const timeframe = document.getElementById('timeframeSelect').value;
+            const container = document.querySelector('.chart-container');
+            
+            // Show loading
+            if (!priceChart) {
+                container.innerHTML = '<div class="loading" id="chartLoading">📊 Cargando gráfico...</div><canvas id="priceChart" style="display:none;"></canvas>';
+            }
             
             try {
                 const response = await fetch(`${API_BASE}/market/klines/${encodeURIComponent(symbol)}?timeframe=${timeframe}&limit=100`);
-                const data = await response.json();
                 
-                if (!data.data) return;
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
                 
-                const candles = data.data;
-                const labels = candles.map(c => new Date(c.timestamp));
-                const prices = candles.map(c => c.close);
-                const volumes = candles.map(c => c.volume);
+                const result = await response.json();
                 
+                if (!result.data || result.data.length === 0) {
+                    container.innerHTML = '<div class="loading">❌ No hay datos disponibles</div>';
+                    return;
+                }
+                
+                const candles = result.data;
+                // Show only last 50 candles for cleaner chart
+                const recentCandles = candles.slice(-50);
+                
+                const labels = recentCandles.map((c, i) => {
+                    const date = new Date(c.timestamp);
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                });
+                const prices = recentCandles.map(c => c.close);
+                
+                // Remove loading, show canvas
+                container.innerHTML = '<canvas id="priceChart"></canvas>';
                 const ctx = document.getElementById('priceChart').getContext('2d');
                 
                 if (priceChart) {
@@ -520,9 +540,9 @@ DASHBOARD_HTML = """
                             backgroundColor: gradient,
                             borderWidth: 2,
                             fill: true,
-                            tension: 0.1,
+                            tension: 0.3,
                             pointRadius: 0,
-                            pointHoverRadius: 6
+                            pointHoverRadius: 4
                         }]
                     },
                     options: {
@@ -533,7 +553,10 @@ DASHBOARD_HTML = """
                             intersect: false,
                         },
                         plugins: {
-                            legend: { display: false },
+                            legend: { 
+                                display: true,
+                                labels: { color: '#888' }
+                            },
                             tooltip: {
                                 backgroundColor: '#1a1a2e',
                                 titleColor: '#e0e0e0',
@@ -547,16 +570,12 @@ DASHBOARD_HTML = """
                         },
                         scales: {
                             x: {
-                                type: 'time',
-                                time: {
-                                    unit: timeframe === '1d' ? 'day' : 'hour',
-                                    displayFormats: {
-                                        hour: 'HH:mm',
-                                        day: 'MMM dd'
-                                    }
-                                },
                                 grid: { color: '#1a1a2e' },
-                                ticks: { color: '#666', maxTicksLimit: 6 }
+                                ticks: { 
+                                    color: '#666', 
+                                    maxTicksLimit: 8,
+                                    maxRotation: 45
+                                }
                             },
                             y: {
                                 grid: { color: '#1a1a2e' },
@@ -571,6 +590,10 @@ DASHBOARD_HTML = """
                 
             } catch (e) {
                 console.error('Error loading chart:', e);
+                container.innerHTML = `<div class="loading">
+                    ❌ Error cargando gráfico<br>
+                    <span style="font-size:0.8rem; color:#666;">${e.message}</span>
+                </div>`;
             }
         }
 
@@ -660,5 +683,5 @@ async def dashboard_status():
     return {
         "status": "running",
         "mode": "paper_trading",
-        "version": "0.2.1"
+        "version": "0.3.0"
     }
