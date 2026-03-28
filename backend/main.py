@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     
     # Log available routes for debugging
-    print("🚀 Open Trader v0.3.1 iniciado")
+    print("🚀 Open Trader v0.4.0 iniciado")
     print("📡 Routes loaded:")
     for route in app.routes:
         if hasattr(route, 'methods'):
@@ -33,8 +33,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Open Trader API",
-    description="Sistema de trading algorítmico con paper trading y Multi-DEX",
-    version="0.3.1",
+    description="Sistema de trading algorítmico con paper trading, Multi-DEX y Agente AI",
+    version="0.4.0",
     lifespan=lifespan,
     docs_url="/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
     redoc_url="/redoc" if os.getenv("DEBUG", "false").lower() == "true" else None
@@ -63,10 +63,10 @@ app.include_router(agent.router, tags=["AI Trading Agent"])
 async def root():
     return {
         "name": "Open Trader",
-        "version": "0.3.1",
+        "version": "0.4.0",
         "status": "running",
         "mode": "paper_trading",
-        "features": ["multi-dex", "advanced-orders", "realtime-charts", "multi-provider"],
+        "features": ["multi-dex", "advanced-orders", "realtime-charts", "multi-provider", "ai-agent"],
         "docs": "/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
         "dashboard": "/dashboard/"
     }
