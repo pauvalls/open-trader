@@ -298,8 +298,9 @@ class AITradingAgent:
                 action = TradeAction.SELL
                 reason = f"🔴 SELL signal: {sell_signals}/{total_strategies} strategies agree"
             elif not has_position:
-                # Could implement short selling here
-                pass
+                # Open SHORT position (if enabled in future)
+                # For now, just indicate we would sell if we had a position
+                reason = f"🔴 SELL signal: {sell_signals}/{total_strategies} strategies agree (no position to close)"
                 
         # Calculate position size in USD
         amount_usd = 0.0

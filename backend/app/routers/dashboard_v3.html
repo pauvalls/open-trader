@@ -3410,7 +3410,7 @@
             buySeg.className = `consensus-segment ${buyCount >= threshold ? 'buy' : 'inactive'}`;
             
             holdSeg.textContent = `HOLD ${holdCount}/${total}`;
-            holdSeg.className = `consensus-segment neutral`;
+            holdSeg.className = `consensus-segment ${(buyCount >= threshold || sellCount >= threshold) ? 'inactive' : 'neutral'}`;
             
             sellSeg.textContent = `SELL ${sellCount}/${total}`;
             sellSeg.className = `consensus-segment ${sellCount >= threshold ? 'sell' : 'inactive'}`;
