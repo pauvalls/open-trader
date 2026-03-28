@@ -76,8 +76,9 @@ async def root():
 async def version():
     """Get current API version"""
     return {
-        "version": "0.3.1",
-        "release_date": "2024-03-28",
+        "version": "0.4.0",
+        "release_date": "2026-03-28",
+        "features": ["paper-trading", "multi-dex", "ai-agent", "auto-trading"],
         "changelog": "https://github.com/pauvalls/open-trader/blob/main/CHANGELOG.md"
     }
 

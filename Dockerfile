@@ -25,6 +25,10 @@ RUN echo "Build version 0.4.0 - AI Agent - $(date)" > /tmp/build_version
 # Stage 2: Production
 FROM python:3.11-slim as production
 
+# Force rebuild marker - change this to invalidate cache
+ARG BUILD_TIMESTAMP=2026-03-28-19-25
+ENV BUILD_TIMESTAMP=${BUILD_TIMESTAMP}
+
 # Security: Create non-root user
 RUN groupadd -r trader && useradd -r -g trader trader
 
