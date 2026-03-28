@@ -82,36 +82,43 @@ async def get_config(account_id: str, db: AsyncSession = Depends(get_db)):
     Note: The API key itself is NOT returned for security.
     Only a flag indicating if a key exists is returned.
     """
-    result = await db.execute(select(UserConfig).where(UserConfig.account_id == account_id))
-    config = result.scalar_one_or_none()
-    
-    if not config:
-        # Return default config
+    try:
+        result = await db.execute(select(UserConfig).where(UserConfig.account_id == account_id))
+        config = result.scalar_one_or_none()
+        
+        if not config:
+            print(f"ℹ️ No config found for account {account_id}, returning defaults")
+            # Return default config
+            return UserConfigResponse(
+                account_id=account_id,
+                has_kimi_api_key=False,
+                use_kimi_api=False,
+                agent_preset="balanced",
+                agent_symbols=["BTC/USDT", "ETH/USDT"],
+                agent_strategies=["rsi", "macd", "bollinger"],
+                agent_risk_config=None,
+                language="es",
+                tutorial_seen=False,
+                updated_at=""
+            )
+        
+        print(f"✅ Config retrieved for account {account_id}: lang={config.language}, has_key={bool(config.kimi_api_key_encrypted)}")
+        
         return UserConfigResponse(
-            account_id=account_id,
-            has_kimi_api_key=False,
-            use_kimi_api=False,
-            agent_preset="balanced",
-            agent_symbols=["BTC/USDT", "ETH/USDT"],
-            agent_strategies=["rsi", "macd", "bollinger"],
-            agent_risk_config=None,
-            language="es",
-            tutorial_seen=False,
-            updated_at=""
+            account_id=config.account_id,
+            has_kimi_api_key=bool(config.kimi_api_key_encrypted),
+            use_kimi_api=config.use_kimi_api,
+            agent_preset=config.agent_preset,
+            agent_symbols=config.agent_symbols or ["BTC/USDT", "ETH/USDT"],
+            agent_strategies=config.agent_strategies or ["rsi", "macd", "bollinger"],
+            agent_risk_config=config.agent_risk_config,
+            language=config.language,
+            tutorial_seen=config.tutorial_seen,
+            updated_at=config.updated_at.isoformat() if config.updated_at else ""
         )
-    
-    return UserConfigResponse(
-        account_id=config.account_id,
-        has_kimi_api_key=bool(config.kimi_api_key_encrypted),
-        use_kimi_api=config.use_kimi_api,
-        agent_preset=config.agent_preset,
-        agent_symbols=config.agent_symbols or ["BTC/USDT", "ETH/USDT"],
-        agent_strategies=config.agent_strategies or ["rsi", "macd", "bollinger"],
-        agent_risk_config=config.agent_risk_config,
-        language=config.language,
-        tutorial_seen=config.tutorial_seen,
-        updated_at=config.updated_at.isoformat() if config.updated_at else ""
-    )
+    except Exception as e:
+        print(f"❌ Error retrieving config for {account_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve configuration: {str(e)}")
 
 
 @router.post("/{account_id}", response_model=UserConfigResponse)
@@ -126,57 +133,67 @@ async def save_config(
     If kimi_api_key is provided, it will be encrypted and stored securely.
     The key is NEVER returned in any response.
     """
-    result = await db.execute(select(UserConfig).where(UserConfig.account_id == account_id))
-    config = result.scalar_one_or_none()
-    
-    if not config:
-        config = UserConfig(account_id=account_id)
-        db.add(config)
-    
-    # Update fields
-    if request.kimi_api_key is not None:
-        if request.kimi_api_key.strip():
-            config.kimi_api_key_encrypted = _encrypt_key(request.kimi_api_key.strip())
-        else:
-            # Empty string means delete the key
-            config.kimi_api_key_encrypted = None
-    
-    if request.use_kimi_api is not None:
-        config.use_kimi_api = request.use_kimi_api
-    
-    if request.agent_preset is not None:
-        config.agent_preset = request.agent_preset
-    
-    if request.agent_symbols is not None:
-        config.agent_symbols = request.agent_symbols
-    
-    if request.agent_strategies is not None:
-        config.agent_strategies = request.agent_strategies
-    
-    if request.agent_risk_config is not None:
-        config.agent_risk_config = request.agent_risk_config
-    
-    if request.language is not None:
-        config.language = request.language
-    
-    if request.tutorial_seen is not None:
-        config.tutorial_seen = request.tutorial_seen
-    
-    await db.commit()
-    await db.refresh(config)
-    
-    return UserConfigResponse(
-        account_id=config.account_id,
-        has_kimi_api_key=bool(config.kimi_api_key_encrypted),
-        use_kimi_api=config.use_kimi_api,
-        agent_preset=config.agent_preset,
-        agent_symbols=config.agent_symbols or ["BTC/USDT", "ETH/USDT"],
-        agent_strategies=config.agent_strategies or ["rsi", "macd", "bollinger"],
-        agent_risk_config=config.agent_risk_config,
-        language=config.language,
-        tutorial_seen=config.tutorial_seen,
-        updated_at=config.updated_at.isoformat() if config.updated_at else ""
-    )
+    try:
+        result = await db.execute(select(UserConfig).where(UserConfig.account_id == account_id))
+        config = result.scalar_one_or_none()
+        
+        if not config:
+            config = UserConfig(account_id=account_id)
+            db.add(config)
+        
+        # Update fields
+        if request.kimi_api_key is not None:
+            if request.kimi_api_key.strip():
+                config.kimi_api_key_encrypted = _encrypt_key(request.kimi_api_key.strip())
+                print(f"🔐 API key encrypted and saved for account {account_id}")
+            else:
+                # Empty string means delete the key
+                config.kimi_api_key_encrypted = None
+        
+        if request.use_kimi_api is not None:
+            config.use_kimi_api = request.use_kimi_api
+        
+        if request.agent_preset is not None:
+            config.agent_preset = request.agent_preset
+        
+        if request.agent_symbols is not None:
+            config.agent_symbols = request.agent_symbols
+        
+        if request.agent_strategies is not None:
+            config.agent_strategies = request.agent_strategies
+        
+        if request.agent_risk_config is not None:
+            config.agent_risk_config = request.agent_risk_config
+        
+        if request.language is not None:
+            config.language = request.language
+        
+        if request.tutorial_seen is not None:
+            config.tutorial_seen = request.tutorial_seen
+        
+        # Explicit flush and commit for PostgreSQL
+        await db.flush()
+        await db.commit()
+        await db.refresh(config)
+        
+        print(f"✅ Config saved for account {account_id}: lang={config.language}, preset={config.agent_preset}")
+        
+        return UserConfigResponse(
+            account_id=config.account_id,
+            has_kimi_api_key=bool(config.kimi_api_key_encrypted),
+            use_kimi_api=config.use_kimi_api,
+            agent_preset=config.agent_preset,
+            agent_symbols=config.agent_symbols or ["BTC/USDT", "ETH/USDT"],
+            agent_strategies=config.agent_strategies or ["rsi", "macd", "bollinger"],
+            agent_risk_config=config.agent_risk_config,
+            language=config.language,
+            tutorial_seen=config.tutorial_seen,
+            updated_at=config.updated_at.isoformat() if config.updated_at else ""
+        )
+    except Exception as e:
+        await db.rollback()
+        print(f"❌ Error saving config for {account_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to save configuration: {str(e)}")
 
 
 @router.delete("/{account_id}/api-key", response_model=ApiKeyResponse)
