@@ -9,17 +9,25 @@ from app.services.market_multi import get_market_service
 router = APIRouter()
 
 
+def normalize_symbol(symbol: str) -> str:
+    """Normalizar símbolo de trading (ETH/USDT -> ETHUSDT)"""
+    # CCXT espera símbolos sin slash
+    return symbol.replace("/", "")
+
+
 @router.get("/price/{symbol}")
 async def get_price(symbol: str):
     """Obtener precio actual de un par (ej: ETH/USDC)"""
     service = get_market_service()
-    price = await service.get_price(symbol)
+    normalized = normalize_symbol(symbol)
+    price = await service.get_price(normalized)
     
     if price is None:
         raise HTTPException(status_code=404, detail=f"Símbolo no encontrado: {symbol}")
     
     return {
         "symbol": symbol,
+        "normalized": normalized,
         "price": price,
         "timestamp": service.last_update,
         "provider": service.get_current_provider()
@@ -41,7 +49,8 @@ async def get_klines(
     Binance → Bybit → Kraken → KuCoin
     """
     service = get_market_service()
-    klines = await service.get_klines(symbol, timeframe, limit)
+    normalized = normalize_symbol(symbol)
+    klines = await service.get_klines(normalized, timeframe, limit)
     
     if klines is None:
         raise HTTPException(
@@ -51,6 +60,7 @@ async def get_klines(
     
     return {
         "symbol": symbol,
+        "normalized": normalized,
         "timeframe": timeframe,
         "provider": service.get_current_provider(),
         "count": len(klines),
@@ -72,7 +82,7 @@ async def get_status():
     service = get_market_service()
     
     # Test rápido para ver qué provider responde
-    test_price = await service.get_price("ETH/USDT")
+    test_price = await service.get_price("ETHUSDT")
     
     return {
         "status": "ok" if test_price else "degraded",
