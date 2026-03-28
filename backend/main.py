@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Open Trader API",
     description="Sistema de trading algorítmico con paper trading y Multi-DEX",
-    version="0.3.0",
+    version="0.3.1",
     lifespan=lifespan,
     docs_url="/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
     redoc_url="/redoc" if os.getenv("DEBUG", "false").lower() == "true" else None
@@ -54,10 +54,10 @@ app.include_router(advanced_orders.router, prefix="/orders", tags=["Órdenes Ava
 async def root():
     return {
         "name": "Open Trader",
-        "version": "0.3.0",
+        "version": "0.3.1",
         "status": "running",
         "mode": "paper_trading",
-        "features": ["multi-dex", "advanced-orders", "realtime-charts"],
+        "features": ["multi-dex", "advanced-orders", "realtime-charts", "multi-provider"],
         "docs": "/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
         "dashboard": "/dashboard/"
     }

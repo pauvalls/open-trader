@@ -507,6 +507,9 @@ DASHBOARD_HTML = """
                 });
                 const prices = recentCandles.map(c => c.close);
                 
+                // Get provider info
+                const providerInfo = result.provider ? ` via ${result.provider}` : '';
+                
                 // Remove loading, show canvas
                 container.innerHTML = '<canvas id="priceChart"></canvas>';
                 const ctx = document.getElementById('priceChart').getContext('2d');
@@ -534,7 +537,7 @@ DASHBOARD_HTML = """
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: symbol,
+                            label: symbol + providerInfo,
                             data: prices,
                             borderColor: isUp ? '#10b981' : '#ef4444',
                             backgroundColor: gradient,
@@ -592,7 +595,8 @@ DASHBOARD_HTML = """
                 console.error('Error loading chart:', e);
                 container.innerHTML = `<div class="loading">
                     ❌ Error cargando gráfico<br>
-                    <span style="font-size:0.8rem; color:#666;">${e.message}</span>
+                    <span style="font-size:0.8rem; color:#666;">${e.message}</span><br>
+                    <button onclick="updateChart()" style="margin-top:10px; padding:5px 15px; font-size:0.8rem;">🔄 Reintentar</button>
                 </div>`;
             }
         }
@@ -683,5 +687,6 @@ async def dashboard_status():
     return {
         "status": "running",
         "mode": "paper_trading",
-        "version": "0.3.0"
+        "version": "0.3.1",
+        "features": ["multi-dex", "advanced-orders", "realtime-charts", "multi-provider"]
     }

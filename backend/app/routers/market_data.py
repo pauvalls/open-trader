@@ -4,23 +4,25 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 
-from app.services.market import MarketService
+from app.services.market_multi import get_market_service
 
 router = APIRouter()
-market_service = MarketService()
 
 
 @router.get("/price/{symbol}")
 async def get_price(symbol: str):
     """Obtener precio actual de un par (ej: ETH/USDC)"""
-    price = await market_service.get_price(symbol)
+    service = get_market_service()
+    price = await service.get_price(symbol)
+    
     if price is None:
         raise HTTPException(status_code=404, detail=f"Símbolo no encontrado: {symbol}")
     
     return {
         "symbol": symbol,
         "price": price,
-        "timestamp": market_service.last_update
+        "timestamp": service.last_update,
+        "provider": service.get_current_provider()
     }
 
 
@@ -34,14 +36,24 @@ async def get_klines(
     Obtener velas históricas (OHLCV)
     
     Timeframes: 1m, 5m, 15m, 1h, 4h, 1d
+    
+    Usa múltiples providers con fallback automático:
+    Binance → Bybit → Kraken → KuCoin
     """
-    klines = await market_service.get_klines(symbol, timeframe, limit)
+    service = get_market_service()
+    klines = await service.get_klines(symbol, timeframe, limit)
+    
     if klines is None:
-        raise HTTPException(status_code=404, detail=f"No se pudieron obtener datos para {symbol}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"No se pudieron obtener datos para {symbol}. Todos los providers fallaron."
+        )
     
     return {
         "symbol": symbol,
         "timeframe": timeframe,
+        "provider": service.get_current_provider(),
+        "count": len(klines),
         "data": klines
     }
 
@@ -49,5 +61,23 @@ async def get_klines(
 @router.get("/tickers")
 async def get_tickers():
     """Lista de pares disponibles"""
-    tickers = await market_service.get_available_tickers()
+    service = get_market_service()
+    tickers = await service.get_available_tickers()
     return {"tickers": tickers}
+
+
+@router.get("/status")
+async def get_status():
+    """Estado del servicio de datos y provider activo"""
+    service = get_market_service()
+    
+    # Test rápido para ver qué provider responde
+    test_price = await service.get_price("ETH/USDT")
+    
+    return {
+        "status": "ok" if test_price else "degraded",
+        "active_provider": service.get_current_provider(),
+        "available_providers": ["binance", "bybit", "kraken", "kucoin"],
+        "last_update": service.last_update,
+        "test_price_eth": test_price
+    }
