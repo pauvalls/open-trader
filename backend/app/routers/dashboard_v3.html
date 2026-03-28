@@ -2125,7 +2125,7 @@
                                 <div class="consensus-segment neutral" id="consensusHold">HOLD 3/3</div>
                                 <div class="consensus-segment" id="consensusSell">SELL 0/3</div>
                             </div>
-                            <div class="consensus-threshold" id="consensusThreshold">
+                            <div class="consensus-threshold" id="consensusThresholdDisplay">
                                 Threshold: 2/3 strategies required
                             </div>
                         </div>
@@ -3093,7 +3093,7 @@
             }
         }
         
-        function saveAgentConfig() {
+        async function saveAgentConfig() {
             agentConfig.maxPosition = parseFloat(document.getElementById('maxPosition').value);
             agentConfig.maxPositions = parseInt(document.getElementById('maxPositions').value);
             agentConfig.maxDailyTrades = parseInt(document.getElementById('maxDailyTrades').value);
@@ -3104,7 +3104,38 @@
             agentConfig.kimiApiKey = document.getElementById('kimiApiKey').value;
             
             localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
-            showToast('Configuration saved', 'success');
+            
+            // If agent is running, update config immediately
+            if (currentAccount && document.getElementById('agentStatusText').textContent === 'Running') {
+                try {
+                    const agentId = `agent_${currentAccount.slice(0,8)}`;
+                    const res = await fetch(`${API_BASE}/agent/config/${agentId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            consensus_threshold: agentConfig.consensus,
+                            max_position_size_usd: agentConfig.maxPosition,
+                            max_positions: agentConfig.maxPositions,
+                            max_daily_trades: agentConfig.maxDailyTrades,
+                            stop_loss_pct: agentConfig.sl,
+                            take_profit_pct: agentConfig.tp,
+                            check_interval_minutes: agentConfig.interval,
+                            use_kimi_api: !!agentConfig.kimiApiKey,
+                            kimi_api_key: agentConfig.kimiApiKey || undefined
+                        })
+                    });
+                    
+                    if (res.ok) {
+                        showToast('Configuration saved & applied to running agent', 'success');
+                    } else {
+                        showToast('Configuration saved locally but failed to apply to agent', 'warning');
+                    }
+                } catch (e) {
+                    showToast('Configuration saved locally but failed to apply to agent', 'warning');
+                }
+            } else {
+                showToast('Configuration saved', 'success');
+            }
         }
         
         // ===== Agent Control =====
@@ -3346,14 +3377,14 @@
             sellSeg.className = `consensus-segment ${sellCount >= threshold ? 'sell' : 'inactive'}`;
             
             // Update threshold text
-            document.getElementById('consensusThreshold').textContent = 
+            document.getElementById('consensusThresholdDisplay').textContent = 
                 `Threshold: ${threshold}/${total} strategies required`;
             
             // Update overall recommendation
             if (consensus.action && consensus.action !== 'hold') {
                 const action = consensus.action.toUpperCase();
                 const conf = consensus.confidence ? `(${(consensus.confidence * 100).toFixed(0)}%)` : '';
-                document.getElementById('consensusThreshold').textContent += ` → ${action} ${conf}`;
+                document.getElementById('consensusThresholdDisplay').textContent += ` → ${action} ${conf}`;
             }
         }
         

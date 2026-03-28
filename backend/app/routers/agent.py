@@ -69,6 +69,31 @@ class AgentControlRequest(BaseModel):
                         description="Control action: start, stop, pause, resume")
 
 
+class AgentConfigUpdate(BaseModel):
+    """Update agent configuration (only provided fields are updated)"""
+    symbols: Optional[List[str]] = None
+    timeframe: Optional[str] = None
+    check_interval_minutes: Optional[int] = Field(None, ge=5, le=1440)
+    
+    # Strategies
+    use_rsi: Optional[bool] = None
+    use_macd: Optional[bool] = None
+    use_bollinger: Optional[bool] = None
+    consensus_threshold: Optional[int] = Field(None, ge=1, le=3)
+    
+    # Risk Management
+    max_position_size_usd: Optional[float] = Field(None, gt=0)
+    max_positions: Optional[int] = Field(None, ge=1, le=10)
+    max_daily_trades: Optional[int] = Field(None, ge=1, le=100)
+    stop_loss_pct: Optional[float] = Field(None, ge=0.1, le=50)
+    take_profit_pct: Optional[float] = Field(None, ge=0.1, le=100)
+    
+    # AI Enhancement
+    use_kimi_api: Optional[bool] = None
+    kimi_api_key: Optional[str] = None
+    kimi_confidence_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
+
+
 class AgentStatusResponse(BaseModel):
     """Agent status response"""
     agent_id: str
@@ -219,6 +244,39 @@ async def get_agent_status(agent_id: str):
         "config": status["config"],
         "state": status["state"],
         "recent_decisions": status["recent_decisions"]
+    }
+
+
+@router.patch("/config/{agent_id}", response_model=AgentStatusResponse)
+async def update_agent_config(
+    agent_id: str,
+    request: AgentConfigUpdate
+):
+    """
+    Update configuration of an existing agent.
+    
+    Only provided fields are updated. The agent can be updated while running
+    and changes take effect immediately.
+    """
+    agent = get_agent(agent_id)
+    if not agent:
+        raise HTTPException(404, f"Agent {agent_id} not found. Create it first.")
+    
+    # Update config fields that are provided
+    update_data = request.dict(exclude_unset=True)
+    
+    for field, value in update_data.items():
+        if hasattr(agent.config, field):
+            setattr(agent.config, field, value)
+            print(f"📝 Updated {field} = {value}")
+    
+    return {
+        "agent_id": agent_id,
+        "status": agent.state.status.value,
+        "is_running": agent.state.status == AgentStatus.RUNNING,
+        "config": agent.get_status()["config"],
+        "state": agent.get_status()["state"],
+        "recent_decisions": agent.get_status()["recent_decisions"]
     }
 
 
