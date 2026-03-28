@@ -1,317 +1,231 @@
-# Open Trader
+<div align="center">
 
-Sistema de trading algorítmico de criptomonedas con soporte para paper trading y ejecución real en Uniswap V3.
+# 🤖 Open Trader
 
-**[English Documentation](README_EN.md)** | **[Changelog](CHANGELOG.md)** | **[Railway Deploy](RAILWAY.md)**
+**Algorithmic Crypto Trading System with AI Agent**
 
-## ✨ Características
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/open-trader)
 
-- **📊 Paper Trading**: Simula operaciones con dinero ficticio usando precios de mercado reales
-- **📈 Estrategias**: RSI, MACD, Bollinger Bands + sistema de consenso multi-estrategia
-- **🎯 Órdenes Avanzadas**: Limit, Stop-Loss, Trailing Stop, Bracket Orders (Entry + SL + TP)
-- **🏦 Multi-DEX**: Soporte Uniswap V3, PancakeSwap V3, SushiSwap V3 (fácil cambio entre DEXs)
-- **🔔 Alertas**: Notificaciones en tiempo real vía Telegram y Discord
-- **📱 Dashboard**: Interfaz web en tiempo real con gráficos de precios
-- **🏠 Self-hosted**: Tú controlas tus claves y tu instancia
+[English](#english) | [Español](#español)
 
-## 📁 Estructura
+</div>
+
+---
+
+<a name="english"></a>
+## 🇬🇧 English
+
+### ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| **🤖 AI Trading Agent** | Autonomous trading bot with technical strategies + optional AI analysis |
+| **📊 Paper Trading** | Practice with fake money using real market prices |
+| **🧠 Multi-Strategy** | RSI, MACD, Bollinger Bands with consensus system |
+| **🎯 Advanced Orders** | Limit, Stop-Loss, Trailing Stop, Bracket Orders |
+| **🏦 Multi-DEX** | Uniswap V3, PancakeSwap V3, SushiSwap V3 support |
+| **🔔 Alerts** | Telegram & Discord notifications |
+| **📱 Dashboard** | Real-time web UI with charts |
+| **🌍 i18n** | English & Spanish support |
+
+### 🚀 Quick Deploy
+
+#### Railway (One Click)
+
+1. Click the button above
+2. Add your environment variables (optional):
+   - `KIMI_API_KEY` - For AI-enhanced trading
+   - `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` - For alerts
+3. Done! Your dashboard will be live in ~2 minutes
+
+#### Docker
+
+```bash
+git clone https://github.com/pauvalls/open-trader.git
+cd open-trader
+cp backend/.env.example backend/.env
+# Edit backend/.env with your settings
+docker-compose up -d
+```
+
+### 🎮 AI Agent Usage
+
+**Create an Agent:**
+```bash
+curl -X POST https://your-app.railway.app/agent/create/my-agent \
+  -H "Content-Type: application/json" \
+  -d '{
+    "account_id": "your-account-id",
+    "symbols": ["ETH/USDT", "BTC/USDT"],
+    "preset": "balanced",
+    "kimi_api_key": "optional-kimi-key-for-ai-mode"
+  }'
+```
+
+**Control:**
+```bash
+# Start
+curl -X POST https://your-app.railway.app/agent/control/my-agent \
+  -d '{"action": "start"}'
+
+# Check status
+curl https://your-app.railway.app/agent/status/my-agent
+```
+
+### 🧠 How the AI Agent Works
+
+**Mode 1: Technical Strategies (Default)**
+- Monitors market every 15 minutes
+- Uses RSI + MACD + Bollinger Bands
+- Executes when 2/3 strategies agree (configurable)
+- No AI involved - pure technical analysis
+
+**Mode 2: AI-Enhanced (Optional)**
+- Same technical analysis
+- PLUS: Sends market data to Kimi AI for additional validation
+- Only trades when both AI + strategies agree
+- Requires `KIMI_API_KEY`
+
+### 📁 Structure
+
+```
+open-trader/
+├── backend/           # FastAPI + trading logic
+│   ├── app/
+│   │   ├── routers/   # API endpoints
+│   │   ├── services/  # Market, alerts, AI agent
+│   │   └── strategies/# RSI, MACD, Bollinger
+│   ├── main.py
+│   └── requirements.txt
+├── Dockerfile
+├── railway.json       # Railway template config
+└── docker-compose.yml
+```
+
+### 🔧 Configuration
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL URL (auto-set by Railway) | Auto |
+| `KIMI_API_KEY` | Moonshot AI API key | Optional |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot for alerts | Optional |
+| `DISCORD_WEBHOOK_URL` | Discord webhook | Optional |
+
+---
+
+<a name="español"></a>
+## 🇪🇸 Español
+
+### ✨ Características
+
+| Característica | Descripción |
+|----------------|-------------|
+| **🤖 Agente AI** | Bot de trading autónomo con estrategias + IA opcional |
+| **📊 Paper Trading** | Practica con dinero ficticio y precios reales |
+| **🧠 Multi-Estrategia** | RSI, MACD, Bollinger con sistema de consenso |
+| **🎯 Órdenes Avanzadas** | Limit, Stop-Loss, Trailing Stop, Bracket Orders |
+| **🏦 Multi-DEX** | Soporte Uniswap V3, PancakeSwap V3, SushiSwap V3 |
+| **🔔 Alertas** | Notificaciones Telegram y Discord |
+| **📱 Dashboard** | Interfaz web en tiempo real |
+| **🌍 i18n** | Soporte Español e Inglés |
+
+### 🚀 Deploy Rápido
+
+#### Railway (Un Click)
+
+1. Haz click en el botón de arriba
+2. Añade variables de entorno (opcional):
+   - `KIMI_API_KEY` - Para modo IA mejorado
+   - `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` - Para alertas
+3. ¡Listo! Tu dashboard estará online en ~2 minutos
+
+#### Docker
+
+```bash
+git clone https://github.com/pauvalls/open-trader.git
+cd open-trader
+cp backend/.env.example backend/.env
+# Edita backend/.env con tu configuración
+docker-compose up -d
+```
+
+### 🎮 Uso del Agente AI
+
+**Crear un Agente:**
+```bash
+curl -X POST https://tu-app.railway.app/agent/create/mi-agente \
+  -H "Content-Type: application/json" \
+  -d '{
+    "account_id": "tu-cuenta-id",
+    "symbols": ["ETH/USDT", "BTC/USDT"],
+    "preset": "balanced",
+    "kimi_api_key": "api-key-opcional-para-modo-ia"
+  }'
+```
+
+**Control:**
+```bash
+# Iniciar
+curl -X POST https://tu-app.railway.app/agent/control/mi-agente \
+  -d '{"action": "start"}'
+
+# Ver estado
+curl https://tu-app.railway.app/agent/status/mi-agente
+```
+
+### 🧠 Cómo Funciona el Agente AI
+
+**Modo 1: Estrategias Técnicas (Por defecto)**
+- Monitorea el mercado cada 15 minutos
+- Usa RSI + MACD + Bollinger Bands
+- Ejecuta cuando 2/3 estrategias coinciden
+- Sin IA - análisis técnico puro
+
+**Modo 2: IA Mejorada (Opcional)**
+- Mismo análisis técnico
+- ADEMÁS: Envía datos a Kimi AI para validación adicional
+- Solo opera cuando IA + estrategias coinciden
+- Requiere `KIMI_API_KEY`
+
+### 📁 Estructura
 
 ```
 open-trader/
 ├── backend/           # FastAPI + lógica de trading
 │   ├── app/
-│   │   ├── routers/   # API endpoints (paper, market, strategies, dashboard)
-│   │   ├── services/  # Market data, alerts
-│   │   └── strategies/# RSI, MACD, Bollinger implementations
+│   │   ├── routers/   # Endpoints API
+│   │   ├── services/  # Mercado, alertas, agente AI
+│   │   └── strategies/# RSI, MACD, Bollinger
 │   ├── main.py
 │   └── requirements.txt
-├── Dockerfile         # Build optimizado para producción (multi-stage)
-├── railway.toml       # Configuración de Railway
-├── docker-compose.yml # Para self-hosting fácil
-├── CHANGELOG.md       # Historial de cambios
-├── RAILWAY.md         # Guía de deploy en Railway
-├── README.md          # Esta documentación (Español)
-└── README_EN.md       # Documentación en Inglés
+├── Dockerfile
+├── railway.json       # Configuración template Railway
+└── docker-compose.yml
 ```
 
-## 🚀 Quick Start
+### 🔧 Configuración
 
-### Multi-DEX Soportados
+| Variable | Descripción | Requerido |
+|----------|-------------|-----------|
+| `DATABASE_URL` | URL PostgreSQL (Railway lo configura) | Auto |
+| `KIMI_API_KEY` | API key de Moonshot AI | Opcional |
+| `TELEGRAM_BOT_TOKEN` | Bot Telegram para alertas | Opcional |
+| `DISCORD_WEBHOOK_URL` | Webhook Discord | Opcional |
 
-| DEX | Chains | Identificador |
-|-----|--------|---------------|
-| **Uniswap V3** | Ethereum, Arbitrum, Base, Optimism, Polygon | `uniswap-arbitrum` |
-| **PancakeSwap V3** | BSC, Arbitrum, Base | `pancakeswap-bsc` |
-| **SushiSwap V3** | Ethereum, Arbitrum, Base | `sushiswap-arbitrum` |
+---
 
-Cambiar de DEX es simple: solo cambia el parámetro `dex_id` en las órdenes.
+## 📝 License
 
-### Docker (Recomendado)
+MIT License - See [LICENSE](LICENSE) file
 
-```bash
-# Clonar y entrar
-git clone https://github.com/pauvalls/open-trader.git
-cd open-trader
+## 🤝 Contributing
 
-# Configurar
-cp backend/.env.example backend/.env
-# Editar backend/.env con tus variables (ver Configuración)
+PRs welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-# Levantar
-docker-compose up -d
+---
 
-# Ver logs
-docker-compose logs -f backend
-```
+<div align="center">
 
-### Python Local
+**Made with ❤️ by Pau & Kimi**
 
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-cp .env.example .env
-# Editar .env
-
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Railway (Deploy con un click)
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/your-template-url)
-
-Ver [RAILWAY.md](RAILWAY.md) para instrucciones detalladas.
-
-## 🌐 Acceso
-
-Una vez levantado:
-
-- **Dashboard**: http://localhost:8000/dashboard/
-- **API Docs**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/health/
-
-## ⚙️ Configuración
-
-Edita `backend/.env`:
-
-```env
-# API
-DEBUG=true
-SECRET_KEY=tu-clave-secreta-muy-larga
-
-# Base de datos
-DATABASE_URL=sqlite+aiosqlite:///./data/paper_trading.db
-
-# Alertas (opcional pero recomendado)
-TELEGRAM_BOT_TOKEN=tu-token-de-botfather
-TELEGRAM_CHAT_ID=tu-chat-id
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
-```
-
-### Obtener credenciales de alertas:
-
-**Telegram:**
-1. Habla con [@BotFather](https://t.me/botfather)
-2. Crea un bot nuevo (`/newbot`)
-3. Copia el token
-4. Envía un mensaje a tu bot
-5. Ve a `https://api.telegram.org/bot[TU_TOKEN]/getUpdates` para ver tu chat_id
-
-**Discord:**
-1. En tu servidor: Server Settings → Integrations → Webhooks
-2. New Webhook → Copy URL
-
-## 📊 Estrategias Disponibles
-
-| Estrategia | Descripción | Parámetros |
-|------------|-------------|------------|
-| **RSI** | Compra RSI<30, Vende RSI>70 | period, oversold, overbought |
-| **MACD** | Cruce de MACD y señal | fast, slow, signal |
-| **Bollinger** | Bandas de Bollinger | period, std_dev, use_confirmation |
-
-### Consenso Multi-Estrategia
-
-El endpoint `/strategies/scan` combina las 3 estrategias y genera una señal de consenso:
-- **BUY**: 2+ estrategias indican compra
-- **SELL**: 2+ estrategias indican venta
-- **HOLD**: Sin consenso claro
-
-## 🔌 API Endpoints Principales
-
-### Paper Trading
-```bash
-# Crear cuenta
-POST /paper/account
-{"initial_balance": 10000}
-
-# Ver cuenta
-GET /paper/account/{id}
-
-# Ejecutar orden
-POST /paper/order
-{
-  "account_id": "uuid",
-  "symbol": "ETH/USDT",
-  "side": "buy",
-  "amount": 0.5
-}
-
-# Historial
-GET /paper/orders/{account_id}
-```
-
-### Estrategias
-```bash
-# Listar
-GET /strategies
-
-# Señal actual
-GET /strategies/rsi/signal?symbol=ETH/USDT&timeframe=1h
-
-# Backtest
-POST /strategies/rsi/backtest
-{
-  "symbol": "ETH/USDT",
-  "timeframe": "1h",
-  "initial_balance": 10000,
-  "strategy_params": {"rsi_period": 14}
-}
-
-# Scan multi-estrategia
-GET /strategies/scan?symbol=BTC/USDT
-```
-
-### Órdenes Avanzadas
-```bash
-# Market Order (ejecución inmediata)
-POST /orders/market
-{
-  "account_id": "uuid",
-  "symbol": "ETH/USDT",
-  "side": "buy",
-  "amount": 0.5,
-  "dex_id": "uniswap-arbitrum"
-}
-
-# Limit Order (ejecución a precio específico)
-POST /orders/limit
-{
-  "account_id": "uuid",
-  "symbol": "ETH/USDT",
-  "side": "buy",
-  "amount": 0.5,
-  "price": 1800.00,
-  "expires_hours": 24
-}
-
-# Stop Loss (se activa al cruzar precio)
-POST /orders/stop-loss
-{
-  "account_id": "uuid",
-  "symbol": "ETH/USDT",
-  "side": "sell",
-  "amount": 0.5,
-  "stop_price": 1800.00
-}
-
-# Trailing Stop (stop móvil con el precio)
-POST /orders/trailing-stop
-{
-  "account_id": "uuid",
-  "symbol": "ETH/USDT",
-  "side": "sell",
-  "amount": 0.5,
-  "trailing_percent": 5.0
-}
-
-# Bracket Order (Entry + Stop Loss + Take Profit con OCO)
-POST /orders/bracket
-{
-  "account_id": "uuid",
-  "symbol": "ETH/USDT",
-  "side": "buy",
-  "amount": 0.5,
-  "entry_price": 2000.00,      # null para market entry
-  "stop_loss_price": 1800.00,  # -10% stop loss
-  "take_profit_price": 2400.00 # +20% take profit
-}
-
-# Listar DEXs disponibles
-GET /orders/dexes
-
-# Ver órdenes abiertas
-GET /orders/open/{account_id}
-
-# Cancelar orden
-DELETE /orders/{order_id}
-```
-```bash
-# Precio actual
-GET /market/price/ETH/USDT
-
-# Velas históricas
-GET /market/klines/ETH/USDT?timeframe=1h&limit=100
-
-# Pares disponibles
-GET /market/tickers
-```
-
-## 📱 Dashboard
-
-Accede a `/dashboard/` para ver:
-- Balance y P&L en tiempo real
-- Posiciones abiertas
-- Señales activas (auto-refresh cada 5s)
-- Historial de órdenes
-- Logs en tiempo real
-
-## 🔔 Alertas
-
-Las alertas se envían automáticamente cuando:
-- Se detecta una señal de trading (buy/sell)
-- Se ejecuta una orden
-- Hay consenso multi-estrategia
-
-Configura TELEGRAM_BOT_TOKEN y DISCORD_WEBHOOK_URL en `.env` para recibirlas.
-
-## 🗺️ Roadmap
-
-### Fase 1: Paper Trading ✅
-- [x] Sistema de paper trading
-- [x] Múltiples estrategias (RSI, MACD, Bollinger)
-- [x] Órdenes avanzadas (limit, stop-loss, trailing stop, bracket)
-- [x] Multi-DEX (Uniswap, PancakeSwap, SushiSwap)
-- [x] Dashboard con gráficos
-- [x] Alertas Telegram/Discord
-- [ ] Machine Learning para estrategias
-
-### Fase 2: Live Trading 🔄
-- [ ] Wallet integration (private key management)
-- [ ] Gas estimation and optimization
-- [ ] Slippage protection
-- [ ] Análisis on-chain
-- [ ] MEV protection
-
-### Fase 3: Avanzado
-- [ ] Portfolio rebalancing
-- [ ] Arbitrage detection
-- [ ] Yield farming automation
-- [ ] Copy trading
-
-## ⚠️ Disclaimer
-
-Este software es para fines educativos. El trading de criptomonedas implica riesgos significativos:
-- Nunca inviertas más de lo que puedes perder
-- Prueba exhaustivamente en paper trading antes de usar dinero real
-- Revisa cada operación antes de confirmarla
-- Yo (Kimi Claw) no soy asesor financiero
-
-## 🤝 Contribuir
-
-Este es un proyecto en desarrollo activo. Sugerencias y PRs son bienvenidos.
-
-## 📄 Licencia
-
-MIT - Úsalo bajo tu propia responsabilidad.
+</div>

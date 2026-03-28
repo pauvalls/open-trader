@@ -6,9 +6,34 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import Column, String, Float, DateTime, Integer, Boolean, JSON
 from datetime import datetime
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/paper_trading.db")
+def get_database_url():
+    """Get database URL with proper driver conversion for Railway"""
+    url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/paper_trading.db")
+    
+    # Railway uses postgres:// but SQLAlchemy needs postgresql+asyncpg://
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
+    return url
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+DATABASE_URL = get_database_url()
+
+# Configure engine based on database type
+if "sqlite" in DATABASE_URL:
+    engine = create_async_engine(DATABASE_URL, echo=False)
+else:
+    # PostgreSQL with connection pooling for Railway
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_size=5,
+        max_overflow=10,
+        pool_timeout=30,
+        pool_recycle=1800
+    )
+
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 Base = declarative_base()
 

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --proxy-headers",
+    "healthcheckPath": "/health/",
+    "healthcheckTimeout": 30,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  },
+  "variables": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL database URL (auto-provisioned by Railway)",
+      "required": false
+    },
+    "KIMI_API_KEY": {
+      "description": "Moonshot Kimi API key for AI-enhanced trading (optional)",
+      "required": false
+    },
+    "TELEGRAM_BOT_TOKEN": {
+      "description": "Telegram bot token for alerts (optional)",
+      "required": false
+    },
+    "TELEGRAM_CHAT_ID": {
+      "description": "Telegram chat ID for alerts (optional)",
+      "required": false
+    },
+    "DISCORD_WEBHOOK_URL": {
+      "description": "Discord webhook URL for alerts (optional)",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for JWT tokens",
+      "default": "change-this-in-production"
+    },
+    "DEBUG": {
+      "description": "Debug mode",
+      "default": "false"
+    },
+    "PORT": {
+      "description": "Server port",
+      "default": "8000"
+    }
+  }
+}

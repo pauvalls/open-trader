@@ -5,6 +5,1144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open Trader - Dashboard Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+    // ===== i18n Translations =====
+    const i18n = {
+        es: {
+            title: 'Open Trader - Dashboard Pro',
+            subtitle: 'Paper Trading • Estrategias • Agente AI',
+            tutorial: '📚 Tutorial',
+            long: 'LONG',
+            short: 'SHORT',
+            trading: 'Trading',
+            positions: 'Posiciones',
+            orders: 'Órdenes',
+            history: 'Historial',
+            analysis: 'Análisis',
+            agent: 'Agente AI',
+            totalBalance: 'Balance Total',
+            unrealizedPnL: 'P&L No Realizado',
+            openPositions: 'Pos. Abiertas',
+            available: 'Disponible',
+            bestPosition: 'Mejor Posición',
+            selectAccount: 'Seleccionar Cuenta',
+            createNew: '+ Crear Nueva',
+            noAccount: 'Sin cuenta seleccionada',
+            createAccountDesc: 'Crea una cuenta para empezar',
+            chart: 'Gráfico',
+            price: 'Precio',
+            strategies: 'Estrategias',
+            scan: 'Escanear',
+            market: 'Mercado',
+            entryPrice: 'Precio Entrada',
+            stopLoss: 'Stop Loss',
+            takeProfit: 'Take Profit',
+            riskReward: 'Riesgo/Beneficio',
+            totalRisk: 'Riesgo Total',
+            amount: 'Cantidad',
+            execute: 'Ejecutar',
+            longDesc: 'Crees que SUBIRÁ',
+            shortDesc: 'Crees que BAJARÁ',
+            advancedMode: 'Modo Avanzado',
+            addSLTP: 'Añadir SL/TP',
+            signalBuy: 'COMPRAR',
+            signalSell: 'VENDER',
+            signalNeutral: 'NEUTRO',
+            agentStatus: 'Estado del Agente',
+            agentRunning: '🟢 Activo',
+            agentStopped: '⚪ Detenido',
+            agentPaused: '⏸️ Pausado',
+            startAgent: '▶️ Iniciar Agente',
+            stopAgent: '⏹️ Detener Agente',
+            agentConfig: 'Configuración del Agente',
+            selectPreset: 'Seleccionar Perfil',
+            conservative: 'Conservador',
+            balanced: 'Equilibrado',
+            aggressive: 'Agresivo',
+            aiEnhanced: 'IA Mejorada',
+            selectSymbols: 'Seleccionar Pares',
+            selectStrategies: 'Estrategias a Usar',
+            riskConfig: 'Configuración de Riesgo',
+            maxPositionUSD: 'Máx $/posición',
+            maxPositions: 'Máx posiciones',
+            maxDailyTrades: 'Máx trades/día',
+            stopLossPct: 'Stop Loss %',
+            takeProfitPct: 'Take Profit %',
+            checkInterval: 'Intervalo chequeo (min)',
+            kimiApiKey: 'Kimi API Key (opcional)',
+            enableAI: 'Activar análisis con IA',
+            createAgent: 'Crear Agente',
+            lastScan: 'Último scan',
+            tradesToday: 'Trades hoy',
+            dailyPnL: 'P&L diario',
+            recentDecisions: 'Decisiones recientes',
+            noDecisions: 'Sin decisiones aún',
+            accountCreated: 'Cuenta creada',
+            orderExecuted: 'Orden ejecutada',
+            error: 'Error',
+            tutorialTitle: 'Bienvenido a Open Trader',
+            tutorialStep1: 'Open Trader es una plataforma de trading de criptomonedas donde puedes practicar sin riesgo usando dinero ficticio.',
+            tutorialStep2: 'En trading, LONG significa que apuestas a que el precio SUBIRÁ. SHORT significa que apuestas a que BAJARÁ.',
+            tutorialStep3: 'Stop Loss (SL) cierra tu posición automáticamente si el precio va en tu contra. Take Profit (TP) cierra cuando alcanzas tu objetivo de ganancia.',
+            tutorialStep4: 'El sistema usa 3 estrategias técnicas: RSI detecta sobrecompra/sobreventa, MACD detecta tendencias, y Bollinger Bands detecta volatilidad.',
+            tutorialStep5: 'Para operar: selecciona un par (ej: ETH/USDT), elige LONG o SHORT según tu análisis, ajusta la cantidad y ejecuta.',
+            tutorialStep6: 'Usa solo dinero que puedas perder. Nunca inviertas más del 2% de tu capital en una sola operación. El trading es riesgoso.',
+            tutorialStep7: 'El Agente AI opera automáticamente por ti. Usa estrategias técnicas y opcionalmente IA para validar decisiones. Pruébalo en paper trading primero.',
+            tutorialNext: 'Siguiente',
+            tutorialPrev: 'Anterior',
+            tutorialFinish: '¡Empezar!',
+            skip: 'Saltar',
+            online: 'Online',
+            paper: 'Paper Trading'
+        },
+        en: {
+            title: 'Open Trader - Dashboard Pro',
+            subtitle: 'Paper Trading • Strategies • AI Agent',
+            tutorial: '📚 Tutorial',
+            long: 'LONG',
+            short: 'SHORT',
+            trading: 'Trading',
+            positions: 'Positions',
+            orders: 'Orders',
+            history: 'History',
+            analysis: 'Analysis',
+            agent: 'AI Agent',
+            totalBalance: 'Total Balance',
+            unrealizedPnL: 'Unrealized P&L',
+            openPositions: 'Open Pos.',
+            available: 'Available',
+            bestPosition: 'Best Position',
+            selectAccount: 'Select Account',
+            createNew: '+ Create New',
+            noAccount: 'No account selected',
+            createAccountDesc: 'Create an account to start',
+            chart: 'Chart',
+            price: 'Price',
+            strategies: 'Strategies',
+            scan: 'Scan',
+            market: 'Market',
+            entryPrice: 'Entry Price',
+            stopLoss: 'Stop Loss',
+            takeProfit: 'Take Profit',
+            riskReward: 'Risk/Reward',
+            totalRisk: 'Total Risk',
+            amount: 'Amount',
+            execute: 'Execute',
+            longDesc: 'You think it will GO UP',
+            shortDesc: 'You think it will GO DOWN',
+            advancedMode: 'Advanced Mode',
+            addSLTP: 'Add SL/TP',
+            signalBuy: 'BUY',
+            signalSell: 'SELL',
+            signalNeutral: 'NEUTRAL',
+            agentStatus: 'Agent Status',
+            agentRunning: '🟢 Running',
+            agentStopped: '⚪ Stopped',
+            agentPaused: '⏸️ Paused',
+            startAgent: '▶️ Start Agent',
+            stopAgent: '⏹️ Stop Agent',
+            agentConfig: 'Agent Configuration',
+            selectPreset: 'Select Profile',
+            conservative: 'Conservative',
+            balanced: 'Balanced',
+            aggressive: 'Aggressive',
+            aiEnhanced: 'AI Enhanced',
+            selectSymbols: 'Select Pairs',
+            selectStrategies: 'Strategies to Use',
+            riskConfig: 'Risk Configuration',
+            maxPositionUSD: 'Max $/position',
+            maxPositions: 'Max positions',
+            maxDailyTrades: 'Max trades/day',
+            stopLossPct: 'Stop Loss %',
+            takeProfitPct: 'Take Profit %',
+            checkInterval: 'Check interval (min)',
+            kimiApiKey: 'Kimi API Key (optional)',
+            enableAI: 'Enable AI analysis',
+            createAgent: 'Create Agent',
+            lastScan: 'Last scan',
+            tradesToday: 'Trades today',
+            dailyPnL: 'Daily P&L',
+            recentDecisions: 'Recent decisions',
+            noDecisions: 'No decisions yet',
+            accountCreated: 'Account created',
+            orderExecuted: 'Order executed',
+            error: 'Error',
+            tutorialTitle: 'Welcome to Open Trader',
+            tutorialStep1: 'Open Trader is a crypto trading platform where you can practice risk-free using fake money.',
+            tutorialStep2: 'In trading, LONG means you bet the price will GO UP. SHORT means you bet it will GO DOWN.',
+            tutorialStep3: 'Stop Loss (SL) closes your position automatically if price goes against you. Take Profit (TP) closes when you hit your profit target.',
+            tutorialStep4: 'The system uses 3 technical strategies: RSI detects overbought/oversold, MACD detects trends, and Bollinger Bands detect volatility.',
+            tutorialStep5: 'To trade: select a pair (e.g., ETH/USDT), choose LONG or SHORT based on your analysis, adjust amount and execute.',
+            tutorialStep6: 'Only use money you can afford to lose. Never invest more than 2% of your capital in a single trade. Trading is risky.',
+            tutorialStep7: 'The AI Agent trades automatically for you. Uses technical strategies and optionally AI to validate decisions. Test it in paper trading first.',
+            tutorialNext: 'Next',
+            tutorialPrev: 'Previous',
+            tutorialFinish: 'Start Trading!',
+            skip: 'Skip',
+            online: 'Online',
+            paper: 'Paper Trading'
+        }
+    };
+
+    let currentLang = localStorage.getItem('openTraderLang') || 'es';
+    
+    function t(key) {
+        return i18n[currentLang][key] || key;
+    }
+    
+    function setLang(lang) {
+        currentLang = lang;
+        localStorage.setItem('openTraderLang', lang);
+        document.documentElement.lang = lang;
+        updateUIText();
+    }
+    
+    function updateUIText() {
+        // Update all elements with data-i18n attribute
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (el.tagName === 'INPUT' && el.placeholder) {
+                el.placeholder = t(key);
+            } else {
+                el.textContent = t(key);
+            }
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.lang = currentLang;
+        updateUIText();
+    });
+    
+    // Tutorial content
+    const tutorialSteps = {
+        es: [
+            { title: 'Bienvenido a Open Trader', text: 'Open Trader es una plataforma de trading de criptomonedas donde puedes practicar sin riesgo usando dinero ficticio (paper trading).' },
+            { title: 'LONG vs SHORT', text: 'En trading, LONG significa que apuestas a que el precio SUBIRÁ. SHORT significa que apuestas a que BAJARÁ.' },
+            { title: 'Stop Loss y Take Profit', text: 'Stop Loss (SL) cierra tu posición automáticamente si el precio va en tu contra. Take Profit (TP) cierra cuando alcanzas tu objetivo de ganancia.' },
+            { title: 'Estrategias Automáticas', text: 'El sistema usa 3 estrategias: RSI detecta sobrecompra/sobreventa, MACD detecta tendencias, Bollinger Bands detecta volatilidad.' },
+            { title: 'Cómo Operar', text: 'Para operar: selecciona un par (ej: ETH/USDT), elige LONG o SHORT según tu análisis, ajusta la cantidad y ejecuta.' },
+            { title: 'Consejos de Trading', text: '⚠️ Solo usa dinero que puedas perder. Nunca inviertas más del 2% de tu capital en una sola operación. El trading es riesgoso.' },
+            { title: 'Agente AI', text: '🤖 El Agente AI opera automáticamente por ti. Usa estrategias técnicas y opcionalmente IA para validar decisiones. ¡Pruébalo primero en paper trading!' }
+        ],
+        en: [
+            { title: 'Welcome to Open Trader', text: 'Open Trader is a crypto trading platform where you can practice risk-free using fake money (paper trading).' },
+            { title: 'LONG vs SHORT', text: 'In trading, LONG means you bet the price will GO UP. SHORT means you bet it will GO DOWN.' },
+            { title: 'Stop Loss and Take Profit', text: 'Stop Loss (SL) closes your position automatically if price goes against you. Take Profit (TP) closes when you hit your profit target.' },
+            { title: 'Automatic Strategies', text: 'The system uses 3 strategies: RSI detects overbought/oversold, MACD detects trends, Bollinger Bands detect volatility.' },
+            { title: 'How to Trade', text: 'To trade: select a pair (e.g., ETH/USDT), choose LONG or SHORT based on your analysis, adjust amount and execute.' },
+            { title: 'Trading Tips', text: '⚠️ Only use money you can afford to lose. Never invest more than 2% of your capital in a single trade. Trading is risky.' },
+            { title: 'AI Agent', text: '🤖 The AI Agent trades automatically for you. Uses technical strategies and optionally AI to validate decisions. Test it in paper trading first!' }
+        ]
+    };
+    
+    function getTutorialSteps() {
+        return tutorialSteps[currentLang];
+    }
+    
+    // Preset names translations
+    const presetNames = {
+        es: { conservative: 'Conservador', balanced: 'Equilibrado', aggressive: 'Agresivo', 'ai-enhanced': 'IA Mejorada' },
+        en: { conservative: 'Conservative', balanced: 'Balanced', aggressive: 'Aggressive', 'ai-enhanced': 'AI Enhanced' }
+    };
+    
+    function getPresetName(key) {
+        return presetNames[currentLang][key] || key;
+    }
+    
+    // Preset descriptions
+    const presetDescriptions = {
+        es: {
+            conservative: 'Bajo riesgo, retornos estables. Requiere 3/3 estrategias.',
+            balanced: 'Balance entre riesgo y retorno. Requiere 2/3 estrategias.',
+            aggressive: 'Mayor riesgo, más trades. 2/3 estrategias, intervalos cortos.',
+            'ai-enhanced': 'Usa Kimi API para análisis adicional de mercado.'
+        },
+        en: {
+            conservative: 'Low risk, steady returns. Requires 3/3 strategies.',
+            balanced: 'Balance between risk and return. Requires 2/3 strategies.',
+            aggressive: 'Higher risk, more trades. 2/3 strategies, short intervals.',
+            'ai-enhanced': 'Uses Kimi API for additional market analysis.'
+        }
+    };
+    
+    function getPresetDescription(key) {
+        return presetDescriptions[currentLang][key] || '';
+    }
+    
+    // Action translations
+    const actionTranslations = {
+        es: { buy: 'COMPRAR', sell: 'VENDER', neutral: 'NEUTRO' },
+        en: { buy: 'BUY', sell: 'SELL', neutral: 'NEUTRAL' }
+    };
+    
+    function translateAction(action) {
+        return actionTranslations[currentLang][action.toLowerCase()] || action;
+    }
+    
+    // Side translations
+    const sideTranslations = {
+        es: { long: 'LARGO', short: 'CORTO', buy: 'COMPRA', sell: 'VENTA' },
+        en: { long: 'LONG', short: 'SHORT', buy: 'BUY', sell: 'SELL' }
+    };
+    
+    function translateSide(side) {
+        return sideTranslations[currentLang][side.toLowerCase()] || side;
+    }
+    
+    // Confidence translations
+    const confidenceTranslations = {
+        es: 'confianza',
+        en: 'confidence'
+    };
+    
+    function getConfidenceLabel() {
+        return confidenceTranslations[currentLang];
+    }
+    
+    // Agent state translations
+    const agentStateTranslations = {
+        es: { running: 'Activo', stopped: 'Detenido', paused: 'Pausado', idle: 'Inactivo' },
+        en: { running: 'Running', stopped: 'Stopped', paused: 'Paused', idle: 'Idle' }
+    };
+    
+    function translateAgentState(state) {
+        return agentStateTranslations[currentLang][state.toLowerCase()] || state;
+    }
+    
+    // Empty states
+    const emptyStates = {
+        es: {
+            noOrders: { icon: '📭', text: 'No hay órdenes pendientes' },
+            noHistory: { icon: '📈', text: 'Aún no has realizado operaciones' },
+            noPositions: { icon: '📊', text: 'No tienes posiciones abiertas' },
+            noDecisions: { icon: '🤖', text: 'El agente aún no ha tomado decisiones' }
+        },
+        en: {
+            noOrders: { icon: '📭', text: 'No pending orders' },
+            noHistory: { icon: '📈', text: 'No trades yet' },
+            noPositions: { icon: '📊', text: 'No open positions' },
+            noDecisions: { icon: '🤖', text: 'Agent has not made decisions yet' }
+        }
+    };
+    
+    function getEmptyState(type) {
+        return emptyStates[currentLang][type];
+    }
+    
+    // Network errors
+    const networkErrorMessages = {
+        es: {
+            fetchFailed: 'Error de conexión',
+            agentNotFound: 'Agente no encontrado',
+            invalidInput: 'Datos inválidos'
+        },
+        en: {
+            fetchFailed: 'Connection error',
+            agentNotFound: 'Agent not found',
+            invalidInput: 'Invalid input'
+        }
+    };
+    
+    function getNetworkError(type) {
+        return networkErrorMessages[currentLang][type] || 'Error';
+    }
+    
+    // Success messages
+    const successMessages = {
+        es: {
+            agentCreated: 'Agente creado correctamente',
+            agentStarted: 'Agente iniciado',
+            agentStopped: 'Agente detenido',
+            tradeExecuted: 'Operación ejecutada'
+        },
+        en: {
+            agentCreated: 'Agent created successfully',
+            agentStarted: 'Agent started',
+            agentStopped: 'Agent stopped',
+            tradeExecuted: 'Trade executed'
+        }
+    };
+    
+    function getSuccessMessage(type) {
+        return successMessages[currentLang][type];
+    }
+    
+    // Symbol placeholders
+    const symbolPlaceholders = {
+        es: { searchPairs: 'Buscar pares...', selectPair: 'Seleccionar par' },
+        en: { searchPairs: 'Search pairs...', selectPair: 'Select pair' }
+    };
+    
+    function getSymbolPlaceholder(key) {
+        return symbolPlaceholders[currentLang][key];
+    }
+    
+    // Header labels
+    const headerLabels = {
+        es: { 
+            marketStatus: '📊 Mercado: ', 
+            connection: '• Conexión: ',
+            selectAccount: 'Cuenta',
+            createNew: '+ Crear Nueva'
+        },
+        en: { 
+            marketStatus: '📊 Market: ', 
+            connection: '• Connection: ',
+            selectAccount: 'Account',
+            createNew: '+ Create New'
+        }
+    };
+    
+    function getHeaderLabel(key) {
+        return headerLabels[currentLang][key];
+    }
+    
+    // Button labels
+    const buttonLabels = {
+        es: {
+            scan: '🔍 Escanear',
+            executeLong: '🚀 Ejecutar LONG',
+            executeShort: '🚀 Ejecutar SHORT',
+            createAccount: 'Crear Cuenta',
+            cancel: 'Cancelar',
+            save: 'Guardar',
+            test: '🧪 Probar',
+            delete: '🗑️ Eliminar'
+        },
+        en: {
+            scan: '🔍 Scan',
+            executeLong: '🚀 Execute LONG',
+            executeShort: '🚀 Execute SHORT',
+            createAccount: 'Create Account',
+            cancel: 'Cancel',
+            save: 'Save',
+            test: '🧪 Test',
+            delete: '🗑️ Delete'
+        }
+    };
+    
+    function getButtonLabel(key) {
+        return buttonLabels[currentLang][key];
+    }
+    
+    // Form labels
+    const formLabels = {
+        es: {
+            initialBalance: 'Balance Inicial (USD)',
+            accountName: 'Nombre de la Cuenta (opcional)',
+            amount: 'Cantidad',
+            price: 'Precio',
+            total: 'Total',
+            fee: 'Comisión (0.1%)'
+        },
+        en: {
+            initialBalance: 'Initial Balance (USD)',
+            accountName: 'Account Name (optional)',
+            amount: 'Amount',
+            price: 'Price',
+            total: 'Total',
+            fee: 'Fee (0.1%)'
+        }
+    };
+    
+    function getFormLabel(key) {
+        return formLabels[currentLang][key];
+    }
+    
+    // Info tooltips
+    const tooltips = {
+        es: {
+            slInfo: 'Stop Loss: Cierra automáticamente si el precio baja de este nivel',
+            tpInfo: 'Take Profit: Cierra automáticamente cuando alcances esta ganancia',
+            consensusInfo: 'Número de estrategias que deben coincidir para ejecutar un trade',
+            kimiInfo: 'API Key de Moonshot Kimi para análisis adicional con IA'
+        },
+        en: {
+            slInfo: 'Stop Loss: Automatically closes if price drops below this level',
+            tpInfo: 'Take Profit: Automatically closes when you reach this profit',
+            consensusInfo: 'Number of strategies that must agree to execute a trade',
+            kimiInfo: 'Moonshot Kimi API Key for additional AI analysis'
+        }
+    };
+    
+    function getTooltip(key) {
+        return tooltips[currentLang][key];
+    }
+    
+    // Status indicators
+    const statusIndicators = {
+        es: {
+            connected: '🟢 Conectado',
+            disconnected: '🔴 Desconectado',
+            connecting: '🟡 Conectando...',
+            healthy: 'Saludable',
+            degraded: 'Degradado'
+        },
+        en: {
+            connected: '🟢 Connected',
+            disconnected: '🔴 Disconnected',
+            connecting: '🟡 Connecting...',
+            healthy: 'Healthy',
+            degraded: 'Degraded'
+        }
+    };
+    
+    function getStatusIndicator(key) {
+        return statusIndicators[currentLang][key];
+    }
+    
+    // Time-related
+    const timeLabels = {
+        es: {
+            justNow: 'ahora mismo',
+            minutesAgo: 'minutos atrás',
+            hoursAgo: 'horas atrás',
+            today: 'hoy',
+            yesterday: 'ayer'
+        },
+        en: {
+            justNow: 'just now',
+            minutesAgo: 'minutes ago',
+            hoursAgo: 'hours ago',
+            today: 'today',
+            yesterday: 'yesterday'
+        }
+    };
+    
+    function getTimeLabel(key) {
+        return timeLabels[currentLang][key];
+    }
+    
+    // Chart labels
+    const chartLabels = {
+        es: {
+            price: 'Precio',
+            volume: 'Volumen',
+            candlestick: 'Velas'
+        },
+        en: {
+            price: 'Price',
+            volume: 'Volume',
+            candlestick: 'Candlestick'
+        }
+    };
+    
+    function getChartLabel(key) {
+        return chartLabels[currentLang][key];
+    }
+    
+    // Alert/notification messages
+    const alertMessages = {
+        es: {
+            copied: 'Copiado al portapapeles',
+            confirmDelete: '¿Estás seguro de eliminar este agente?',
+            invalidApiKey: 'API Key inválida',
+            selectSymbol: 'Selecciona al menos un par',
+            selectStrategy: 'Selecciona al menos una estrategia'
+        },
+        en: {
+            copied: 'Copied to clipboard',
+            confirmDelete: 'Are you sure you want to delete this agent?',
+            invalidApiKey: 'Invalid API Key',
+            selectSymbol: 'Select at least one pair',
+            selectStrategy: 'Select at least one strategy'
+        }
+    };
+    
+    function getAlertMessage(key) {
+        return alertMessages[currentLang][key];
+    }
+    
+    // Tab labels with icons
+    const tabLabels = {
+        es: {
+            trading: '📈 Trading',
+            positions: '📋 Posiciones',
+            orders: '📜 Órdenes',
+            history: '📊 Historial',
+            analysis: '📉 Análisis',
+            agent: '🤖 Agente AI'
+        },
+        en: {
+            trading: '📈 Trading',
+            positions: '📋 Positions',
+            orders: '📜 Orders',
+            history: '📊 History',
+            analysis: '📉 Analysis',
+            agent: '🤖 AI Agent'
+        }
+    };
+    
+    function getTabLabel(key) {
+        return tabLabels[currentLang][key];
+    }
+    
+    // Stats labels for quick stats bar
+    const statsLabels = {
+        es: {
+            totalBalance: 'BALANCE TOTAL',
+            unrealizedPnL: 'P&L NO REALIZADO',
+            openPositions: 'POS. ABIERTAS',
+            available: 'DISPONIBLE',
+            bestPosition: 'MEJOR POSICIÓN'
+        },
+        en: {
+            totalBalance: 'TOTAL BALANCE',
+            unrealizedPnL: 'UNREALIZED P&L',
+            openPositions: 'OPEN POSITIONS',
+            available: 'AVAILABLE',
+            bestPosition: 'BEST POSITION'
+        }
+    };
+    
+    function getStatsLabel(key) {
+        return statsLabels[currentLang][key];
+    }
+    
+    // Mode descriptions
+    const modeDescriptions = {
+        es: {
+            long: '🟢 LONG - Crees que el precio SUBIRÁ',
+            short: '🔴 SHORT - Crees que el precio BAJARÁ'
+        },
+        en: {
+            long: '🟢 LONG - You think price will GO UP',
+            short: '🔴 SHORT - You think price will GO DOWN'
+        }
+    };
+    
+    function getModeDescription(mode) {
+        return modeDescriptions[currentLang][mode.toLowerCase()];
+    }
+    
+    // Risk calculation labels
+    const riskLabels = {
+        es: {
+            entryPrice: 'Precio Entrada',
+            stopLoss: 'Stop Loss',
+            takeProfit: 'Take Profit',
+            riskReward: 'Riesgo/Beneficio',
+            riskAmount: 'Riesgo',
+            rewardAmount: 'Beneficio',
+            total: 'Total',
+            invalid: 'Inválido'
+        },
+        en: {
+            entryPrice: 'Entry Price',
+            stopLoss: 'Stop Loss',
+            takeProfit: 'Take Profit',
+            riskReward: 'Risk/Reward',
+            riskAmount: 'Risk',
+            rewardAmount: 'Reward',
+            total: 'Total',
+            invalid: 'Invalid'
+        }
+    };
+    
+    function getRiskLabel(key) {
+        return riskLabels[currentLang][key];
+    }
+    
+    // Loading states
+    const loadingStates = {
+        es: {
+            loading: 'Cargando...',
+            creating: 'Creando...',
+            starting: 'Iniciando...',
+            stopping: 'Deteniendo...',
+            executing: 'Ejecutando...',
+            scanning: 'Escaneando...'
+        },
+        en: {
+            loading: 'Loading...',
+            creating: 'Creating...',
+            starting: 'Starting...',
+            stopping: 'Stopping...',
+            executing: 'Executing...',
+            scanning: 'Scanning...'
+        }
+    };
+    
+    function getLoadingState(key) {
+        return loadingStates[currentLang][key];
+    }
+    
+    // P&L labels (Profit and Loss)
+    const pnlLabels = {
+        es: {
+            profit: 'Ganancia',
+            loss: 'Pérdida',
+            unrealized: 'No realizado',
+            realized: 'Realizado',
+            daily: 'Diario',
+            total: 'Total'
+        },
+        en: {
+            profit: 'Profit',
+            loss: 'Loss',
+            unrealized: 'Unrealized',
+            realized: 'Realized',
+            daily: 'Daily',
+            total: 'Total'
+        }
+    };
+    
+    function getPnLLabel(key) {
+        return pnlLabels[currentLang][key];
+    }
+    
+    // Strategy names
+    const strategyNames = {
+        es: {
+            rsi: 'RSI (Sobrecompra/Sobreventa)',
+            macd: 'MACD (Tendencias)',
+            bollinger: 'Bollinger Bands (Volatilidad)'
+        },
+        en: {
+            rsi: 'RSI (Overbought/Oversold)',
+            macd: 'MACD (Trends)',
+            bollinger: 'Bollinger Bands (Volatility)'
+        }
+    };
+    
+    function getStrategyName(key) {
+        return strategyNames[currentLang][key.toLowerCase()];
+    }
+    
+    // Title and header translations
+    const titles = {
+        es: {
+            mainTitle: 'Open Trader',
+            dashboard: 'Dashboard',
+            tradingPanel: 'Panel de Trading',
+            openPositions: 'Posiciones Abiertas',
+            pendingOrders: 'Órdenes Pendientes',
+            orderHistory: 'Historial de Órdenes',
+            strategyAnalysis: 'Análisis de Estrategias',
+            agentControl: 'Control del Agente AI'
+        },
+        en: {
+            mainTitle: 'Open Trader',
+            dashboard: 'Dashboard',
+            tradingPanel: 'Trading Panel',
+            openPositions: 'Open Positions',
+            pendingOrders: 'Pending Orders',
+            orderHistory: 'Order History',
+            strategyAnalysis: 'Strategy Analysis',
+            agentControl: 'AI Agent Control'
+        }
+    };
+    
+    function getTitle(key) {
+        return titles[currentLang][key];
+    }
+    
+    // Format numbers with locale
+    function formatNumber(num, decimals = 2) {
+        return num.toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    }
+    
+    // Format currency
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat(currentLang === 'es' ? 'es-ES' : 'en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    }
+    
+    // Format percentage
+    function formatPercentage(value, decimals = 2) {
+        return new Intl.NumberFormat(currentLang === 'es' ? 'es-ES' : 'en-US', {
+            style: 'percent',
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(value / 100);
+    }
+    
+    // Format date/time
+    function formatDateTime(date) {
+        return new Date(date).toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-US');
+    }
+    
+    // Format time only
+    function formatTime(date) {
+        return new Date(date).toLocaleTimeString(currentLang === 'es' ? 'es-ES' : 'en-US');
+    }
+    
+    // Format date only
+    function formatDate(date) {
+        return new Date(date).toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US');
+    }
+    
+    // Relative time formatting
+    function formatRelativeTime(date) {
+        const now = new Date();
+        const diff = now - new Date(date);
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        
+        if (minutes < 1) return getTimeLabel('justNow');
+        if (minutes < 60) return `${minutes} ${getTimeLabel('minutesAgo')}`;
+        if (hours < 24) return `${hours} ${getTimeLabel('hoursAgo')}`;
+        return formatDate(date);
+    }
+    
+    // Get translated timeframe labels
+    const timeframeLabels = {
+        es: {
+            '15m': '15 minutos',
+            '1h': '1 hora',
+            '4h': '4 horas',
+            '1d': '1 día'
+        },
+        en: {
+            '15m': '15 minutes',
+            '1h': '1 hour',
+            '4h': '4 hours',
+            '1d': '1 day'
+        }
+    };
+    
+    function getTimeframeLabel(tf) {
+        return timeframeLabels[currentLang][tf] || tf;
+    }
+    
+    // Account-related translations
+    const accountLabels = {
+        es: {
+            account: 'Cuenta',
+            newAccount: 'Nueva Cuenta',
+            selectAccount: 'Seleccionar Cuenta',
+            createAccount: 'Crear Cuenta',
+            accountName: 'Nombre de la Cuenta',
+            initialBalance: 'Balance Inicial',
+            currentBalance: 'Balance Actual',
+            totalValue: 'Valor Total',
+            noAccounts: 'No hay cuentas',
+            createFirst: 'Crea tu primera cuenta'
+        },
+        en: {
+            account: 'Account',
+            newAccount: 'New Account',
+            selectAccount: 'Select Account',
+            createAccount: 'Create Account',
+            accountName: 'Account Name',
+            initialBalance: 'Initial Balance',
+            currentBalance: 'Current Balance',
+            totalValue: 'Total Value',
+            noAccounts: 'No accounts',
+            createFirst: 'Create your first account'
+        }
+    };
+    
+    function getAccountLabel(key) {
+        return accountLabels[currentLang][key];
+    }
+    
+    // Order-related translations
+    const orderLabels = {
+        es: {
+            order: 'Orden',
+            orders: 'Órdenes',
+            market: 'Mercado',
+            limit: 'Límite',
+            stopLoss: 'Stop Loss',
+            takeProfit: 'Take Profit',
+            buy: 'Compra',
+            sell: 'Venta',
+            pending: 'Pendiente',
+            filled: 'Ejecutada',
+            cancelled: 'Cancelada',
+            expired: 'Expirada'
+        },
+        en: {
+            order: 'Order',
+            orders: 'Orders',
+            market: 'Market',
+            limit: 'Limit',
+            stopLoss: 'Stop Loss',
+            takeProfit: 'Take Profit',
+            buy: 'Buy',
+            sell: 'Sell',
+            pending: 'Pending',
+            filled: 'Filled',
+            cancelled: 'Cancelled',
+            expired: 'Expired'
+        }
+    };
+    
+    function getOrderLabel(key) {
+        return orderLabels[currentLang][key];
+    }
+    
+    // Error messages
+    const errorMessages = {
+        es: {
+            generic: 'Ha ocurrido un error',
+            network: 'Error de conexión. Verifica tu internet.',
+            notFound: 'No encontrado',
+            unauthorized: 'No autorizado',
+            invalidData: 'Datos inválidos',
+            insufficientBalance: 'Balance insuficiente',
+            minAmount: 'La cantidad mínima no se cumple',
+            priceNotAvailable: 'Precio no disponible'
+        },
+        en: {
+            generic: 'An error has occurred',
+            network: 'Connection error. Check your internet.',
+            notFound: 'Not found',
+            unauthorized: 'Unauthorized',
+            invalidData: 'Invalid data',
+            insufficientBalance: 'Insufficient balance',
+            minAmount: 'Minimum amount not met',
+            priceNotAvailable: 'Price not available'
+        }
+    };
+    
+    function getErrorMessage(key) {
+        return errorMessages[currentLang][key];
+    }
+    
+    // Confirmation messages
+    const confirmationMessages = {
+        es: {
+            deleteAgent: '¿Eliminar este agente? Esta acción no se puede deshacer.',
+            stopAgent: '¿Detener el agente? Las operaciones en curso se completarán.',
+            executeTrade: '¿Confirmar esta operación?'
+        },
+        en: {
+            deleteAgent: 'Delete this agent? This action cannot be undone.',
+            stopAgent: 'Stop the agent? Ongoing operations will complete.',
+            executeTrade: 'Confirm this trade?'
+        }
+    };
+    
+    function getConfirmationMessage(key) {
+        return confirmationMessages[currentLang][key];
+    }
+    
+    // Tutorial button labels
+    const tutorialButtons = {
+        es: {
+            start: 'Comenzar Tutorial',
+            next: 'Siguiente →',
+            back: '← Anterior',
+            finish: '¡Empezar!',
+            skip: 'Omitir'
+        },
+        en: {
+            start: 'Start Tutorial',
+            next: 'Next →',
+            back: '← Back',
+            finish: 'Start Trading!',
+            skip: 'Skip'
+        }
+    };
+    
+    function getTutorialButton(key) {
+        return tutorialButtons[currentLang][key];
+    }
+    
+    // Agent status messages
+    const agentStatusMessages = {
+        es: {
+            creating: 'Creando agente...',
+            created: 'Agente creado',
+            starting: 'Iniciando agente...',
+            started: 'Agente iniciado',
+            stopping: 'Deteniendo agente...',
+            stopped: 'Agente detenido',
+            pausing: 'Pausando agente...',
+            paused: 'Agente pausado',
+            resuming: 'Reanudando agente...',
+            resumed: 'Agente reanudado',
+            deleting: 'Eliminando agente...',
+            deleted: 'Agente eliminado'
+        },
+        en: {
+            creating: 'Creating agent...',
+            created: 'Agent created',
+            starting: 'Starting agent...',
+            started: 'Agent started',
+            stopping: 'Stopping agent...',
+            stopped: 'Agent stopped',
+            pausing: 'Pausing agent...',
+            paused: 'Agent paused',
+            resuming: 'Resuming agent...',
+            resumed: 'Agent resumed',
+            deleting: 'Deleting agent...',
+            deleted: 'Agent deleted'
+        }
+    };
+    
+    function getAgentStatusMessage(key) {
+        return agentStatusMessages[currentLang][key];
+    }
+    
+    // Toast/notification messages
+    const toastMessages = {
+        es: {
+            success: '✅ Éxito',
+            error: '❌ Error',
+            warning: '⚠️ Advertencia',
+            info: 'ℹ️ Información'
+        },
+        en: {
+            success: '✅ Success',
+            error: '❌ Error',
+            warning: '⚠️ Warning',
+            info: 'ℹ️ Info'
+        }
+    };
+    
+    function getToastMessage(key) {
+        return toastMessages[currentLang][key];
+    }
+    
+    // Initialize language on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.lang = currentLang;
+        
+        // Add language selector if not exists
+        if (!document.getElementById('langSelector')) {
+            const header = document.querySelector('header .header-actions');
+            if (header) {
+                const langSelect = document.createElement('select');
+                langSelect.id = 'langSelector';
+                langSelect.className = 'lang-selector';
+                langSelect.innerHTML = `
+                    <option value="es" ${currentLang === 'es' ? 'selected' : ''}>🇪🇸 ES</option>
+                    <option value="en" ${currentLang === 'en' ? 'selected' : ''}>🇬🇧 EN</option>
+                `;
+                langSelect.onchange = (e) => setLang(e.target.value);
+                header.insertBefore(langSelect, header.firstChild);
+            }
+        }
+    });
+    
+    // Make functions globally available
+    window.i18n = {
+        t,
+        setLang,
+        getTutorialSteps,
+        getPresetName,
+        getPresetDescription,
+        translateAction,
+        translateSide,
+        getConfidenceLabel,
+        translateAgentState,
+        getEmptyState,
+        getNetworkError,
+        getSuccessMessage,
+        getSymbolPlaceholder,
+        getHeaderLabel,
+        getButtonLabel,
+        getFormLabel,
+        getTooltip,
+        getStatusIndicator,
+        getTimeLabel,
+        getChartLabel,
+        getAlertMessage,
+        getTabLabel,
+        getStatsLabel,
+        getModeDescription,
+        getRiskLabel,
+        getLoadingState,
+        getPnLLabel,
+        getStrategyName,
+        getTitle,
+        getTimeframeLabel,
+        getAccountLabel,
+        getOrderLabel,
+        getErrorMessage,
+        getConfirmationMessage,
+        getTutorialButton,
+        getAgentStatusMessage,
+        getToastMessage,
+        formatNumber,
+        formatCurrency,
+        formatPercentage,
+        formatDateTime,
+        formatTime,
+        formatDate,
+        formatRelativeTime,
+        get currentLang() { return currentLang; }
+    };
+    
+    // CSS for language selector
+    const style = document.createElement('style');
+    style.textContent = `
+        .lang-selector {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .lang-selector:hover {
+            border-color: var(--accent-blue);
+        }
+        .lang-selector option {
+            background: var(--bg-secondary);
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Expose current language globally
+    window.currentLang = currentLang;
+    
+    // Language change event
+    window.addEventListener('languageChanged', (e) => {
+        currentLang = e.detail.lang;
+        window.currentLang = currentLang;
+    });
+    
+    // Re-render function for dynamic content
+    window.reRenderWithLanguage = () => {
+        // Trigger any necessary re-renders
+        if (window.renderPositions) window.renderPositions();
+        if (window.renderOrders) window.renderOrders();
+        if (window.renderHistory) window.renderHistory();
+        if (window.renderAgentStatus) window.renderAgentStatus();
+    };
+    
+    // Auto-refresh content when language changes
+    const originalSetLang = setLang;
+    window.setLang = function(lang) {
+        originalSetLang(lang);
+        window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
+        window.reRenderWithLanguage();
+    };
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dispatchEvent(new CustomEvent('i18nReady', { detail: { lang: currentLang } }));
+        });
+    } else {
+        window.dispatchEvent(new CustomEvent('i18nReady', { detail: { lang: currentLang } }));
+    }
+    
+    // Export for module systems (if needed)
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = window.i18n;
+    }
+    
+    // Debug mode - log all translations
+    if (localStorage.getItem('i18nDebug') === 'true') {
+        console.log('i18n initialized:', currentLang);
+        console.log('Available translations:', Object.keys(i18n));
+        window._i18n = i18n;
+    }
+</script>
+
     <style>
         :root {
             --bg-primary: #0a0a0f;
