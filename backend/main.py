@@ -64,7 +64,7 @@ app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
 app.include_router(export.router, prefix="/export", tags=["Export"])
 app.include_router(journal.router, prefix="/journal", tags=["Trading Journal"])
 app.include_router(webhook.router, prefix="/webhook", tags=["Webhooks"])
-app.include_router(user_config.router, prefix="/config", tags=["User Configuration"])
+app.include_router(user_config.router, prefix="/config", tags=["User Config"])
 
 
 @app.get("/")
