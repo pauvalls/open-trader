@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>Open Trader - Professional Trading Terminal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -759,19 +759,405 @@
             font-weight: 600;
         }
         
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .trading-grid { grid-template-columns: 1fr; }
-            .grid-2 { grid-template-columns: 1fr; }
-            .grid-3 { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        /* ==========================================
+           MOBILE FIRST RESPONSIVE DESIGN
+           Base styles = Mobile (< 640px)
+           ========================================== */
+        
+        /* Mobile Base Styles */
+        .header {
+            height: 48px;
+            padding: 0 var(--space-md);
         }
         
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .content { margin-left: 0; }
-            .header { padding: 0 var(--space-md); }
-            .stats-grid { grid-template-columns: 1fr; }
+        .header h1 {
+            font-size: 14px;
+        }
+        
+        .header-subtitle {
+            display: none;
+        }
+        
+        .content {
+            margin-left: 0;
+            padding: calc(48px + var(--space-md)) var(--space-md) var(--space-md);
+        }
+        
+        .sidebar {
+            display: none;
+        }
+        
+        .trading-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-md);
+        }
+        
+        .grid-2, .grid-3 {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-sm);
+        }
+        
+        .stat-card {
+            padding: var(--space-md);
+        }
+        
+        .panel {
+            padding: var(--space-md);
+        }
+        
+        .panel-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space-sm);
+        }
+        
+        .panel-title {
+            font-size: 14px;
+        }
+        
+        .form-row {
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            font-size: 13px;
+            min-height: 44px; /* Touch target */
+        }
+        
+        .btn-large {
+            padding: 16px 24px;
+            font-size: 15px;
+        }
+        
+        .order-type-toggle {
+            flex-direction: column;
+        }
+        
+        .order-type-btn {
+            min-height: 48px;
+        }
+        
+        .toggle-group {
+            flex-wrap: wrap;
+        }
+        
+        .toggle-btn {
+            min-height: 40px;
+            padding: var(--space-sm) var(--space-md);
+        }
+        
+        .chart-container {
+            height: 250px;
+            min-height: 250px;
+        }
+        
+        .data-table {
+            font-size: 12px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: var(--space-sm);
+        }
+        
+        /* Tab Navigation for Mobile */
+        .mobile-tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: var(--space-xs);
+            padding: var(--space-sm) 0;
+            margin-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        
+        .mobile-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .mobile-tab {
+            flex-shrink: 0;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            min-height: 36px;
+        }
+        
+        .mobile-tab.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+        
+        /* Mobile Panel Sections */
+        .mobile-section {
+            margin-bottom: var(--space-lg);
+        }
+        
+        .mobile-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: var(--space-sm);
+            letter-spacing: 0.5px;
+        }
+        
+        /* Bottom Navigation for Mobile */
+        .mobile-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: var(--space-xs) 0 calc(var(--space-xs) + env(safe-area-inset-bottom, 0px));
+            z-index: 100;
+        }
+        
+        .mobile-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: var(--space-xs);
+            color: var(--text-muted);
+            font-size: 10px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .mobile-nav-item.active {
+            color: var(--accent-primary);
+        }
+        
+        .mobile-nav-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+        
+        /* Risk Calculator Mobile */
+        .risk-calc {
+            font-size: 12px;
+        }
+        
+        .risk-calc-item {
+            padding: var(--space-xs) 0;
+        }
+        
+        /* Form Elements Mobile */
+        .form-input, .form-select {
+            min-height: 44px;
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        
+        /* Tutorial Modal Mobile */
+        .tutorial-modal {
+            width: calc(100% - var(--space-lg));
+            max-height: calc(100vh - 100px);
+            margin: var(--space-md);
+        }
+        
+        .tutorial-step {
+            padding: var(--space-md);
+        }
+        
+        .tutorial-step h3 {
+            font-size: 16px;
+        }
+        
+        .tutorial-nav {
+            padding: var(--space-md);
+        }
+        
+        /* Toast Mobile */
+        .toast {
+            left: var(--space-md);
+            right: var(--space-md);
+            max-width: none;
+        }
+        
+        /* Agent Panel Mobile */
+        .agent-status-compact {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+        }
+        
+        .agent-status-compact .status-indicator {
+            width: 8px;
+            height: 8px;
+        }
+        
+        /* Hide desktop elements on mobile */
+        .desktop-only {
+            display: none !important;
+        }
+        
+        .mobile-only {
+            display: block !important;
+        }
+        
+        /* ==========================================
+           TABLET (640px - 1023px)
+           ========================================== */
+        @media (min-width: 640px) {
+            .header {
+                height: 52px;
+                padding: 0 var(--space-lg);
+            }
+            
+            .header h1 {
+                font-size: 16px;
+            }
+            
+            .content {
+                padding: calc(52px + var(--space-lg)) var(--space-lg) var(--space-lg);
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .grid-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            .form-row {
+                flex-direction: row;
+            }
+            
+            .order-type-toggle {
+                flex-direction: row;
+            }
+        }
+        
+        /* ==========================================
+           DESKTOP (1024px+)
+           ========================================== */
+        @media (min-width: 1024px) {
+            .header {
+                height: 56px;
+                padding: 0 var(--space-xl);
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .header-subtitle {
+                display: inline;
+            }
+            
+            .sidebar {
+                display: block;
+                width: 220px;
+            }
+            
+            .content {
+                margin-left: 220px;
+                padding: calc(56px + var(--space-xl)) var(--space-xl) var(--space-xl);
+            }
+            
+            .trading-grid {
+                grid-template-columns: 1fr 380px;
+            }
+            
+            .grid-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .chart-container {
+                height: 400px;
+                min-height: 400px;
+            }
+            
+            .panel {
+                padding: var(--space-lg);
+            }
+            
+            .panel-header {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .mobile-tabs,
+            .mobile-nav {
+                display: none;
+            }
+            
+            .mobile-only {
+                display: none !important;
+            }
+            
+            .desktop-only {
+                display: block !important;
+            }
+            
+            .desktop-only-flex {
+                display: flex !important;
+            }
+            
+            .data-table {
+                font-size: 13px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: var(--space-md);
+            }
+            
+            .tutorial-modal {
+                max-width: 600px;
+            }
+        }
+        
+        /* ==========================================
+           LARGE DESKTOP (1400px+)
+           ========================================== */
+        @media (min-width: 1400px) {
+            .trading-grid {
+                grid-template-columns: 1fr 420px;
+            }
+            
+            .sidebar {
+                width: 240px;
+            }
+            
+            .content {
+                margin-left: 240px;
+            }
+            
+            .chart-container {
+                height: 450px;
+            }
         }
         
         /* Loading */
@@ -954,6 +1340,42 @@
         
         .api-key-status.unsaved {
             color: var(--text-muted);
+        }
+        
+        /* ==========================================
+           MOBILE ENHANCEMENTS
+           ========================================== */
+        
+        /* Touch device optimizations */
+        @media (pointer: coarse) {
+            .btn, .toggle-btn, .tab-btn, .order-tab, .mobile-nav-item {
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .data-table td, .data-table th {
+                padding: var(--space-md);
+            }
+        }
+        
+        /* iOS Safe Area support */
+        @supports (padding: max(0px)) {
+            .header {
+                padding-top: max(env(safe-area-inset-top), 0px);
+                height: calc(48px + env(safe-area-inset-top));
+            }
+            
+            .mobile-nav {
+                padding-bottom: max(env(safe-area-inset-bottom), var(--space-xs));
+            }
+        }
+        
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
@@ -2572,9 +2994,29 @@
             await loadUserConfig(); // Load user config
         }
         
+        // ===== Mobile Navigation =====
+        function switchMobileTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            
+            // Show selected tab
+            const targetTab = document.getElementById(tabName + 'Tab');
+            if (targetTab) targetTab.classList.add('active');
+            
+            // Update mobile nav
+            document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
         // ===== Init =====
         document.addEventListener('DOMContentLoaded', () => {
-            // Load saved config from localStorage as fallback
+            // Check if mobile and show appropriate UI
+            const isMobile = window.innerWidth < 1024;
+            
+            // Load saved config
             const savedConfig = localStorage.getItem('agentConfig');
             if (savedConfig) {
                 try {
@@ -2588,6 +3030,14 @@
             updateChart();
             scanStrategies();
             
+            // Handle resize for responsive switching
+            window.addEventListener('resize', () => {
+                const newIsMobile = window.innerWidth < 1024;
+                if (isMobile !== newIsMobile) {
+                    location.reload(); // Reload to switch UI mode
+                }
+            });
+            
             // Auto refresh
             setInterval(() => {
                 if (currentAccount) {
@@ -2598,5 +3048,25 @@
             }, 30000);
         });
     </script>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav">
+        <div class="mobile-nav-item active" onclick="switchTab('trading'); switchMobileTab('trading')">
+            <span class="mobile-nav-icon">💰</span>
+            <span>Trade</span>
+        </div>
+        <div class="mobile-nav-item" onclick="switchTab('positions'); switchMobileTab('positions')">
+            <span class="mobile-nav-icon">📊</span>
+            <span>Positions</span>
+        </div>
+        <div class="mobile-nav-item" onclick="switchTab('strategies'); switchMobileTab('strategies')">
+            <span class="mobile-nav-icon">🎯</span>
+            <span>Signals</span>
+        </div>
+        <div class="mobile-nav-item" onclick="switchTab('agent'); switchMobileTab('agent')">
+            <span class="mobile-nav-icon">🤖</span>
+            <span>Agent</span>
+        </div>
+    </nav>
 </body>
 </html>
