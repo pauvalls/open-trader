@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: open-trader-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - DATABASE_URL=sqlite+aiosqlite:///./data/paper_trading.db
+      - DEBUG=false
+      # Genera una clave segura para producción
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+    volumes:
+      - ./data:/app/data
+    networks:
+      - open-trader
+
+  # Opcional: Frontend (cuando lo tengamos)
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #   container_name: open-trader-frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - open-trader
+
+networks:
+  open-trader:
+    driver: bridge
