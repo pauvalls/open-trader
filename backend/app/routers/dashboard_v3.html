@@ -687,6 +687,56 @@
             color: #000;
         }
         
+        /* Toggle Switch (Checkbox) */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .toggle-switch input {
+            display: none;
+        }
+        
+        .toggle-slider {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+        }
+        
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(20px);
+            background: white;
+        }
+        
+        .toggle-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
         /* Empty States */
         .empty-state {
             text-align: center;
@@ -1742,6 +1792,36 @@
                             <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="cryptoAmountPreview"></div>
                         </div>
                         
+                        <!-- Advanced Mode Toggle -->
+                        <div class="form-group" style="margin-top:var(--space-sm)">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="advancedModeToggle" onchange="toggleAdvancedMode()">
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">Advanced (SL/TP)</span>
+                            </label>
+                        </div>
+                        
+                        <!-- SL/TP Inputs (hidden by default) -->
+                        <div id="advancedFields" style="display:none">
+                            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm)">
+                                <div class="form-group">
+                                    <label class="form-label" data-i18n="stopLossPct">Stop Loss %</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-input" id="stopLossInput" placeholder="5" step="0.5" min="0.5" max="50" value="5">
+                                        <span class="input-addon">%</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" data-i18n="takeProfitPct">Take Profit %</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-input" id="takeProfitInput" placeholder="10" step="0.5" min="0.5" max="100" value="10">
+                                        <span class="input-addon">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="font-size:11px;color:var(--text-muted);margin-top:4px" id="sltpPreview"></div>
+                        </div>
+                        
                         <div class="risk-calculator">
                             <div class="risk-row">
                                 <span class="risk-label" data-i18n="entryPrice">Entry Price</span>
@@ -2282,6 +2362,7 @@
                 history: 'Historial', agent: 'Agente AI', createNew: 'Crear Nueva',
                 amountUSD: 'Cantidad (USD)', amount: 'Cantidad', entryPrice: 'Precio Entrada',
                 stopLoss: 'Stop Loss', takeProfit: 'Take Profit',
+                stopLossPct: 'Stop Loss %', takeProfitPct: 'Take Profit %',
                 riskReward: 'Riesgo/Beneficio', totalRisk: 'Riesgo Total',
                 executeLong: 'Ejecutar Long', executeShort: 'Ejecutar Short',
                 strategies: 'Estrategias', scan: 'Escanear',
@@ -2373,6 +2454,7 @@
                 history: 'History', agent: 'AI Agent', createNew: 'Create New',
                 amountUSD: 'Amount (USD)', amount: 'Amount', entryPrice: 'Entry Price',
                 stopLoss: 'Stop Loss', takeProfit: 'Take Profit',
+                stopLossPct: 'Stop Loss %', takeProfitPct: 'Take Profit %',
                 riskReward: 'Risk/Reward', totalRisk: 'Total Risk',
                 executeLong: 'Execute Long', executeShort: 'Execute Short',
                 strategies: 'Strategies', scan: 'Scan',
@@ -2633,15 +2715,25 @@
         
         // ===== Risk Calculator =====
         document.getElementById('amountInput').addEventListener('input', updateRiskCalc);
-        document.getElementById('stopLossPct').addEventListener('input', updateRiskCalc);
-        document.getElementById('takeProfitPct').addEventListener('input', updateRiskCalc);
+        document.getElementById('stopLossInput').addEventListener('input', updateRiskCalc);
+        document.getElementById('takeProfitInput').addEventListener('input', updateRiskCalc);
+        
+        function toggleAdvancedMode() {
+            const toggle = document.getElementById('advancedModeToggle');
+            const advancedFields = document.getElementById('advancedFields');
+            advancedFields.style.display = toggle.checked ? 'block' : 'none';
+            if (toggle.checked) {
+                updateRiskCalc();
+            }
+        }
         
         function updateRiskCalc() {
             const amountUSD = parseFloat(document.getElementById('amountInput').value) || 0;
-            const slPct = parseFloat(document.getElementById('stopLossPct')?.value) || 5;
-            const tpPct = parseFloat(document.getElementById('takeProfitPct')?.value) || 10;
+            const advancedMode = document.getElementById('advancedModeToggle')?.checked || false;
+            const slPct = advancedMode ? (parseFloat(document.getElementById('stopLossInput')?.value) || 5) : 5;
+            const tpPct = advancedMode ? (parseFloat(document.getElementById('takeProfitInput')?.value) || 10) : 10;
             const symbol = document.getElementById('symbolSelect')?.value || 'ETH/USDT';
-            const baseSymbol = symbol.split('/')[0]; // ETH, BTC, etc.
+            const baseSymbol = symbol.split('/')[0];
             
             // Update crypto amount preview
             const cryptoPreview = document.getElementById('cryptoAmountPreview');
@@ -2665,6 +2757,12 @@
                 document.getElementById('calcTP').textContent = `$${tp.toFixed(2)}`;
                 document.getElementById('calcRR').textContent = `1:${(tpPct/slPct).toFixed(1)}`;
                 document.getElementById('calcRisk').textContent = `$${(amountUSD * slPct/100).toFixed(2)}`;
+                
+                // Update SL/TP preview in advanced mode
+                const sltpPreview = document.getElementById('sltpPreview');
+                if (sltpPreview && advancedMode) {
+                    sltpPreview.textContent = `SL: $${sl.toFixed(2)} | TP: $${tp.toFixed(2)}`;
+                }
             } else {
                 document.getElementById('calcEntry').textContent = '-';
                 document.getElementById('calcSL').textContent = '-';
@@ -2689,23 +2787,39 @@
             
             const symbol = document.getElementById('symbolSelect').value;
             const baseSymbol = symbol.split('/')[0];
+            const advancedMode = document.getElementById('advancedModeToggle')?.checked || false;
+            
+            // Build order payload
+            const orderPayload = {
+                account_id: currentAccount,
+                symbol: symbol,
+                side: orderSide === 'long' ? 'buy' : 'sell',
+                amount_usd: amountUSD
+            };
+            
+            // Add SL/TP if in advanced mode
+            if (advancedMode) {
+                const slPct = parseFloat(document.getElementById('stopLossInput')?.value);
+                const tpPct = parseFloat(document.getElementById('takeProfitInput')?.value);
+                if (slPct && slPct > 0) orderPayload.stop_loss_pct = slPct;
+                if (tpPct && tpPct > 0) orderPayload.take_profit_pct = tpPct;
+            }
             
             try {
                 const res = await fetch(`${API_BASE}/paper/order`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        account_id: currentAccount,
-                        symbol: symbol,
-                        side: orderSide === 'long' ? 'buy' : 'sell',
-                        amount_usd: amountUSD
-                    })
+                    body: JSON.stringify(orderPayload)
                 });
                 
                 const data = await res.json();
                 
                 if (res.ok) {
-                    showToast(`${orderSide.toUpperCase()}: $${amountUSD} USD → ${data.crypto_amount?.toFixed(6) || '?'} ${baseSymbol}`, 'success');
+                    let successMsg = `${orderSide.toUpperCase()}: $${amountUSD} USD → ${data.crypto_amount?.toFixed(6) || '?'} ${baseSymbol}`;
+                    if (data.stop_loss_pct || data.take_profit_pct) {
+                        successMsg += ` (SL:${data.stop_loss_pct || '-'}% TP:${data.take_profit_pct || '-'}%)`;
+                    }
+                    showToast(successMsg, 'success');
                     document.getElementById('amountInput').value = '';
                     document.getElementById('cryptoAmountPreview').textContent = '';
                     loadAccountData(currentAccount);
