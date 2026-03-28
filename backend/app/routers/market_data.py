@@ -1,6 +1,6 @@
 """Market data endpoints"""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -12,7 +12,7 @@ router = APIRouter()
 def normalize_symbol(symbol: str) -> str:
     """Normalizar símbolo de trading (ETH/USDT -> ETHUSDT)"""
     # CCXT espera símbolos sin slash
-    return symbol.replace("/", "")
+    return symbol.replace("/", "").replace("%2F", "")
 
 
 @router.get("/price/{symbol}")
@@ -47,6 +47,40 @@ async def get_klines(
     
     Usa múltiples providers con fallback automático:
     Binance → Bybit → Kraken → KuCoin
+    """
+    service = get_market_service()
+    normalized = normalize_symbol(symbol)
+    klines = await service.get_klines(normalized, timeframe, limit)
+    
+    if klines is None:
+        raise HTTPException(
+            status_code=503,
+            detail=f"No se pudieron obtener datos para {symbol}. Todos los providers fallaron."
+        )
+    
+    return {
+        "symbol": symbol,
+        "normalized": normalized,
+        "timeframe": timeframe,
+        "provider": service.get_current_provider(),
+        "count": len(klines),
+        "data": klines
+    }
+
+
+# Alternative endpoint using query params for symbols with slashes
+@router.get("/candles")
+async def get_candles(
+    symbol: str = Query(..., description="Trading pair (e.g., ETH/USDT)"),
+    timeframe: str = "1h",
+    limit: int = 100
+):
+    """
+    Obtener velas históricas usando query parameters.
+    
+    Use this endpoint when the symbol contains special characters like '/'.
+    
+    Example: /market/candles?symbol=ETH/USDT&timeframe=1h&limit=100
     """
     service = get_market_service()
     normalized = normalize_symbol(symbol)

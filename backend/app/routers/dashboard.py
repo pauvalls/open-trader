@@ -484,7 +484,8 @@ DASHBOARD_HTML = """
             }
             
             try {
-                const response = await fetch(`${API_BASE}/market/klines/${encodeURIComponent(symbol)}?timeframe=${timeframe}&limit=100`);
+                // Use /candles endpoint with query params to avoid URL encoding issues with /
+                const response = await fetch(`${API_BASE}/market/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&limit=100`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
