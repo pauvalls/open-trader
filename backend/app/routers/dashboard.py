@@ -7,7 +7,7 @@ import os
 router = APIRouter()
 
 # Read the improved dashboard HTML from file
-dashboard_path = os.path.join(os.path.dirname(__file__), "dashboard_v2.html")
+dashboard_path = os.path.join(os.path.dirname(__file__), "dashboard_v3.html")
 with open(dashboard_path, "r", encoding="utf-8") as f:
     DASHBOARD_HTML = f.read()
 
