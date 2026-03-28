@@ -134,7 +134,9 @@ class PaperTradingService:
         account_id: str,
         symbol: str,
         side: str,
-        amount_usd: float
+        amount_usd: float,
+        stop_loss_pct: float = None,
+        take_profit_pct: float = None
     ) -> Dict[str, Any]:
         """Create a paper trading order
         
@@ -143,6 +145,8 @@ class PaperTradingService:
             symbol: Trading pair (e.g., ETH/USDT)
             side: 'buy' or 'sell'
             amount_usd: Amount in USD to trade (e.g., 100 means buy $100 worth of ETH)
+            stop_loss_pct: Optional stop loss percentage (e.g., 5.0 for 5%)
+            take_profit_pct: Optional take profit percentage (e.g., 10.0 for 10%)
         """
         async with get_db() as db:
             # Get account
@@ -165,6 +169,20 @@ class PaperTradingService:
             amount_usd_decimal = Decimal(str(amount_usd))
             crypto_amount = amount_usd_decimal / price  # e.g., $100 / $2000 = 0.05 ETH
             fee = amount_usd_decimal * Decimal("0.001")  # 0.1% fee on USD amount
+            
+            # Prepare metadata with SL/TP
+            metadata = {
+                'amount_usd': float(amount_usd_decimal),
+                'crypto_amount': float(crypto_amount)
+            }
+            
+            if stop_loss_pct:
+                metadata['stop_loss_pct'] = stop_loss_pct
+                metadata['stop_loss_price'] = float(price * Decimal(str(1 - stop_loss_pct / 100)))
+            
+            if take_profit_pct:
+                metadata['take_profit_pct'] = take_profit_pct
+                metadata['take_profit_price'] = float(price * Decimal(str(1 + take_profit_pct / 100)))
             
             if side == 'buy':
                 if account.current_balance_usd < amount_usd_decimal + fee:
@@ -218,17 +236,16 @@ class PaperTradingService:
                 price=price,
                 fee=fee,
                 status='filled',
-                metadata_json={
-                    'amount_usd': float(amount_usd_decimal),
-                    'crypto_amount': float(crypto_amount)
-                }
+                metadata_json=metadata
             )
             db.add(order)
             await db.commit()
             
             # Send alert
+            sl_info = f" SL:{stop_loss_pct}%" if stop_loss_pct else ""
+            tp_info = f" TP:{take_profit_pct}%" if take_profit_pct else ""
             await alert_service.send_alert(
-                f"📝 Paper Trade: {side.upper()} ${amount_usd} of {symbol} = {float(crypto_amount):.6f} @ ${float(price):.2f}",
+                f"📝 Paper Trade: {side.upper()} ${amount_usd} of {symbol} = {float(crypto_amount):.6f} @ ${float(price):.2f}{sl_info}{tp_info}",
                 level='info'
             )
             
@@ -241,5 +258,9 @@ class PaperTradingService:
                 "price": float(price),
                 "fee": float(fee),
                 "total": float(amount_usd_decimal + fee),
-                "status": "filled"
+                "status": "filled",
+                "stop_loss_price": metadata.get('stop_loss_price'),
+                "take_profit_price": metadata.get('take_profit_price'),
+                "stop_loss_pct": stop_loss_pct,
+                "take_profit_pct": take_profit_pct
             }

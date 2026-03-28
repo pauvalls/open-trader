@@ -298,35 +298,17 @@ class AITradingAgent:
                 # Could implement short selling here
                 pass
                 
-        # Calculate position size
-        amount = 0.0
+        # Calculate position size in USD
+        amount_usd = 0.0
         if action != TradeAction.HOLD:
-            # Get current price
-            price_data = await self.market_service.get_ticker(symbol)
-            current_price = price_data.get('last', 0)
-            
-            if current_price > 0:
-                # Calculate amount based on max position size
-                amount = self.config.max_position_size_usd / current_price
-                
-        # Optional: Enhance with Kimi API
-        kimi_analysis = None
-        if self.config.use_kimi_api and self.config.kimi_api_key and action != TradeAction.HOLD:
-            try:
-                kimi_analysis = await self._get_kimi_analysis(symbol, signals, confidence)
-                if kimi_analysis:
-                    # Adjust confidence based on Kimi analysis
-                    kimi_confidence = kimi_analysis.get('confidence', 0.5)
-                    confidence = (confidence + kimi_confidence) / 2
-                    reason += f" | Kimi: {kimi_analysis.get('recommendation', 'neutral')}"
-            except Exception as e:
-                logger.warning(f"Kimi API analysis failed: {e}")
+            # Use max position size as the USD amount to trade
+            amount_usd = self.config.max_position_size_usd
                 
         return TradeDecision(
             symbol=symbol,
             action=action,
             confidence=confidence,
-            amount=amount,
+            amount=amount_usd,  # Now storing USD amount
             reason=reason,
             signals=signals,
             timestamp=datetime.now(),
@@ -444,16 +426,14 @@ Respond in JSON format:
                     account_id=self.config.account_id,
                     symbol=symbol,
                     side="buy",
-                    amount=decision.amount
+                    amount_usd=decision.amount,
+                    stop_loss_pct=self.config.stop_loss_pct if self.config.stop_loss_pct > 0 else None,
+                    take_profit_pct=self.config.take_profit_pct if self.config.take_profit_pct > 0 else None
                 )
                 
-                # Set bracket orders if configured
-                if self.config.stop_loss_pct > 0 or self.config.take_profit_pct > 0:
-                    await self._set_bracket_orders(symbol, order, decision)
-                    
                 self.state.trades_today += 1
                 self.state.positions_opened += 1
-                logger.info(f"✅ BUY executed: {decision.amount} {symbol}")
+                logger.info(f"✅ BUY executed: ${decision.amount:.2f} USD of {symbol} with SL:{self.config.stop_loss_pct}% TP:{self.config.take_profit_pct}%")
                 
             except Exception as e:
                 logger.error(f"Failed to execute buy: {e}")
@@ -463,15 +443,17 @@ Respond in JSON format:
             position = current_positions.get(symbol)
             if position:
                 try:
+                    # Calculate position value in USD
+                    position_value_usd = position['amount'] * position.get('current_price', position['entry_price'])
                     await self.trading_service.create_order(
                         account_id=self.config.account_id,
                         symbol=symbol,
                         side="sell",
-                        amount=position['amount']
+                        amount_usd=position_value_usd
                     )
                     self.state.trades_today += 1
                     self.state.positions_closed += 1
-                    logger.info(f"✅ SELL executed: {position['amount']} {symbol}")
+                    logger.info(f"✅ SELL executed: ${position_value_usd:.2f} USD of {symbol}")
                     
                 except Exception as e:
                     logger.error(f"Failed to execute sell: {e}")

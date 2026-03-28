@@ -29,6 +29,9 @@ class OrderRequest(BaseModel):
     side: str  # buy o sell
     amount_usd: float  # Amount in USD (e.g., 100 means buy $100 worth of crypto)
     order_type: str = "market"
+    # Optional SL/TP
+    stop_loss_pct: Optional[float] = None  # e.g., 5.0 = 5% stop loss
+    take_profit_pct: Optional[float] = None  # e.g., 10.0 = 10% take profit
 
 
 @router.post("/account")
@@ -183,6 +186,20 @@ async def create_order(
             raise HTTPException(status_code=400, detail=f"No tienes suficiente posición para vender. Tienes {position.amount if position else 0:.6f} pero necesitas {crypto_amount:.6f}")
     
     # Crear orden
+    metadata = {
+        "amount_usd": float(amount_usd),
+        "crypto_amount": float(crypto_amount)
+    }
+    
+    # Add SL/TP if provided
+    if req.stop_loss_pct:
+        metadata["stop_loss_pct"] = req.stop_loss_pct
+        metadata["stop_loss_price"] = price * (1 - req.stop_loss_pct / 100)
+    
+    if req.take_profit_pct:
+        metadata["take_profit_pct"] = req.take_profit_pct
+        metadata["take_profit_price"] = price * (1 + req.take_profit_pct / 100)
+    
     order = PaperOrder(
         id=str(uuid.uuid4()),
         account_id=req.account_id,
@@ -192,7 +209,8 @@ async def create_order(
         amount=crypto_amount,  # Store crypto amount
         price=price,
         fee=fee,
-        executed_at=datetime.utcnow()
+        executed_at=datetime.utcnow(),
+        metadata_json=metadata
     )
     
     # Manejar posición
@@ -267,7 +285,11 @@ async def create_order(
         "fee": order.fee,
         "pnl": order.pnl,
         "status": "filled",
-        "remaining_balance": account.current_balance_usd
+        "remaining_balance": account.current_balance_usd,
+        "stop_loss": metadata.get("stop_loss_price"),
+        "take_profit": metadata.get("take_profit_price"),
+        "stop_loss_pct": metadata.get("stop_loss_pct"),
+        "take_profit_pct": metadata.get("take_profit_pct")
     }
 
 
