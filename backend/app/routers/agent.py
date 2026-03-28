@@ -61,7 +61,7 @@ class AgentCreateRequest(BaseModel):
 
 class AgentControlRequest(BaseModel):
     """Control commands for the agent"""
-    action: str = Field(..., regex="^(start|stop|pause|resume)$",
+    action: str = Field(..., pattern="^(start|stop|pause|resume)$",
                         description="Control action: start, stop, pause, resume")
 
 
