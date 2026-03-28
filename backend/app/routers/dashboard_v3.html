@@ -1361,6 +1361,225 @@
         }
         
         /* ==========================================
+           AGENT DIAGNOSTICS PANEL
+           ========================================== */
+        
+        .diagnostic-section {
+            padding: var(--space-md);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+        
+        .signal-detail-grid {
+            display: grid;
+            gap: var(--space-sm);
+        }
+        
+        .signal-detail-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 60px;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+        }
+        
+        .signal-detail-name {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        .signal-detail-value {
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .signal-detail-value.buy {
+            background: var(--color-long-bg);
+            color: var(--color-long);
+        }
+        
+        .signal-detail-value.sell {
+            background: var(--color-short-bg);
+            color: var(--color-short);
+        }
+        
+        .signal-detail-value.hold {
+            background: var(--bg-elevated);
+            color: var(--text-muted);
+        }
+        
+        .signal-detail-confidence {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: right;
+        }
+        
+        .consensus-bar {
+            display: flex;
+            gap: var(--space-xs);
+            padding: var(--space-sm);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+        }
+        
+        .consensus-segment {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .consensus-segment.buy {
+            background: var(--color-long-bg);
+            color: var(--color-long);
+        }
+        
+        .consensus-segment.sell {
+            background: var(--color-short-bg);
+            color: var(--color-short);
+        }
+        
+        .consensus-segment.neutral {
+            background: var(--accent-primary);
+            color: white;
+        }
+        
+        .consensus-segment.inactive {
+            background: var(--bg-elevated);
+            color: var(--text-muted);
+        }
+        
+        .consensus-threshold {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: var(--space-sm);
+        }
+        
+        .last-check-info {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm);
+        }
+        
+        .check-row {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-xs) 0;
+            font-size: 13px;
+        }
+        
+        .check-row span:first-child {
+            color: var(--text-muted);
+        }
+        
+        .decision-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm);
+        }
+        
+        .decision-item {
+            padding: var(--space-sm);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+        }
+        
+        .decision-item:last-child {
+            border-bottom: none;
+        }
+        
+        .decision-item.empty {
+            color: var(--text-muted);
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .decision-time {
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+        
+        .decision-action {
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: var(--space-xs);
+        }
+        
+        .decision-action.buy {
+            background: var(--color-long-bg);
+            color: var(--color-long);
+        }
+        
+        .decision-action.sell {
+            background: var(--color-short-bg);
+            color: var(--color-short);
+        }
+        
+        .decision-action.hold {
+            background: var(--bg-elevated);
+            color: var(--text-muted);
+        }
+        
+        .blockers-list {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm);
+        }
+        
+        .blocker-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-xs);
+            font-size: 12px;
+        }
+        
+        .blocker-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .blocker-item.info {
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent-primary);
+        }
+        
+        .blocker-item.warning {
+            background: rgba(210, 153, 34, 0.1);
+            color: var(--accent-warning);
+        }
+        
+        .blocker-item.error {
+            background: rgba(218, 54, 51, 0.1);
+            color: var(--color-loss);
+        }
+        
+        .blocker-item.success {
+            background: rgba(63, 185, 80, 0.1);
+            color: var(--color-profit);
+        }
+        
+        .diagnostic-actions .btn {
+            flex: 1;
+            font-size: 11px;
+            padding: 8px;
+        }
+        
+        /* ==========================================
            MOBILE ENHANCEMENTS
            ========================================== */
         
@@ -1786,6 +2005,97 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Agent Diagnostics Panel -->
+                <div class="card" style="margin-top:var(--space-lg)">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>🔍</span> Agent Diagnostics
+                        </div>
+                        <button class="btn btn-sm" onclick="refreshDiagnostics()">🔄 Refresh</button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Strategy Signals -->
+                        <div class="diagnostic-section">
+                            <div class="config-title">🎯 Strategy Signals</div>
+                            <div class="signal-detail-grid" id="diagnosticSignals">
+                                <div class="signal-detail-item">
+                                    <span class="signal-detail-name">RSI</span>
+                                    <span class="signal-detail-value" id="diagRSI">-</span>
+                                    <span class="signal-detail-confidence" id="diagRSIConf">-</span>
+                                </div>
+                                <div class="signal-detail-item">
+                                    <span class="signal-detail-name">MACD</span>
+                                    <span class="signal-detail-value" id="diagMACD">-</span>
+                                    <span class="signal-detail-confidence" id="diagMACDConf">-</span>
+                                </div>
+                                <div class="signal-detail-item">
+                                    <span class="signal-detail-name">Bollinger</span>
+                                    <span class="signal-detail-value" id="diagBollinger">-</span>
+                                    <span class="signal-detail-confidence" id="diagBollingerConf">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Consensus Status -->
+                        <div class="diagnostic-section" style="margin-top:var(--space-md)">
+                            <div class="config-title">🗳️ Consensus Status</div>
+                            <div class="consensus-bar" id="consensusBar">
+                                <div class="consensus-segment" id="consensusBuy">BUY 0/3</div>
+                                <div class="consensus-segment neutral" id="consensusHold">HOLD 3/3</div>
+                                <div class="consensus-segment" id="consensusSell">SELL 0/3</div>
+                            </div>
+                            <div class="consensus-threshold" id="consensusThreshold">
+                                Threshold: 2/3 strategies required
+                            </div>
+                        </div>
+                        
+                        <!-- Last Check Info -->
+                        <div class="diagnostic-section" style="margin-top:var(--space-md)">
+                            <div class="config-title">⏱️ Last Check</div>
+                            <div class="last-check-info" id="lastCheckInfo">
+                                <div class="check-row">
+                                    <span>Last scan:</span>
+                                    <span id="lastScanTime">Never</span>
+                                </div>
+                                <div class="check-row">
+                                    <span>Next scan in:</span>
+                                    <span id="nextScanIn">-</span>
+                                </div>
+                                <div class="check-row">
+                                    <span>Status:</span>
+                                    <span id="checkStatus">Idle</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Trade Decision Log -->
+                        <div class="diagnostic-section" style="margin-top:var(--space-md)">
+                            <div class="config-title">📋 Recent Decisions</div>
+                            <div class="decision-log" id="decisionLog">
+                                <div class="decision-item empty">No decisions yet. Start the agent to see trade logic.</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Blockers -->
+                        <div class="diagnostic-section" style="margin-top:var(--space-md)">
+                            <div class="config-title">🚧 Current Blockers</div>
+                            <div class="blockers-list" id="blockersList">
+                                <div class="blocker-item info">
+                                    <span class="blocker-icon">ℹ️</span>
+                                    <span>Agent not started yet</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="diagnostic-actions" style="margin-top:var(--space-md);display:flex;gap:var(--space-sm)">
+                            <button class="btn btn-sm" onclick="forceStrategyScan()">🔍 Force Scan</button>
+                            <button class="btn btn-sm" onclick="testTradeLogic()">🧪 Test Trade Logic</button>
+                            <button class="btn btn-sm" onclick="resetAgentState()">🔄 Reset State</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -2195,6 +2505,12 @@
             if (tab === 'positions') loadPositions();
             if (tab === 'orders') loadOrders();
             if (tab === 'history') loadHistory();
+            if (tab === 'agent') {
+                refreshDiagnostics();
+                startDiagnosticsPolling();
+            } else {
+                stopDiagnosticsPolling();
+            }
         }
         
         // ===== Order Side =====
@@ -2743,6 +3059,7 @@
                 
                 // Start polling
                 startAgentPolling(agentId);
+                startDiagnosticsPolling();
                 
             } catch (e) {
                 showToast(e.message, 'error');
@@ -2768,6 +3085,7 @@
                 document.getElementById('stopAgentBtn').disabled = true;
                 
                 stopAgentPolling();
+                stopDiagnosticsPolling();
             } catch (e) {
                 showToast('Error stopping agent', 'error');
             }
@@ -2797,8 +3115,259 @@
                 document.getElementById('statPositions').textContent = data.positions_count || 0;
                 document.getElementById('statWinRate').textContent = data.win_rate ? `${(data.win_rate * 100).toFixed(1)}%` : '-';
                 document.getElementById('statPnL').textContent = `$${(data.total_pnl || 0).toFixed(2)}`;
+                
+                // Update diagnostics if available
+                if (data.recent_decisions) {
+                    updateDecisionLog(data.recent_decisions);
+                }
+                
+                // Update blockers
+                updateBlockers(data);
+                
             } catch (e) {
                 console.error('Agent poll error:', e);
+            }
+        }
+        
+        // ===== Agent Diagnostics =====
+        let diagnosticsInterval = null;
+        let lastStrategyData = null;
+        
+        function startDiagnosticsPolling() {
+            stopDiagnosticsPolling();
+            diagnosticsInterval = setInterval(refreshDiagnostics, 30000);
+        }
+        
+        function stopDiagnosticsPolling() {
+            if (diagnosticsInterval) {
+                clearInterval(diagnosticsInterval);
+                diagnosticsInterval = null;
+            }
+        }
+        
+        async function refreshDiagnostics() {
+            if (!currentAccount) return;
+            
+            try {
+                // Get strategy signals
+                const symbol = document.getElementById('symbolSelect').value;
+                const res = await fetch(`${API_BASE}/strategies/scan?symbol=${encodeURIComponent(symbol)}`);
+                const data = await res.json();
+                
+                lastStrategyData = data;
+                
+                // Update signal displays
+                updateDiagnosticSignals(data);
+                
+                // Update consensus
+                updateConsensusDisplay(data);
+                
+                // Update last check time
+                document.getElementById('lastScanTime').textContent = new Date().toLocaleTimeString();
+                document.getElementById('checkStatus').textContent = 'OK';
+                document.getElementById('checkStatus').style.color = 'var(--color-profit)';
+                
+            } catch (e) {
+                console.error('Diagnostics error:', e);
+                document.getElementById('checkStatus').textContent = 'Error';
+                document.getElementById('checkStatus').style.color = 'var(--color-loss)';
+            }
+        }
+        
+        function updateDiagnosticSignals(data) {
+            const signals = data.individual_signals || {};
+            const details = data.strategy_details || {};
+            
+            // RSI
+            const rsiSignal = signals.rsi || 'hold';
+            const rsiEl = document.getElementById('diagRSI');
+            const rsiConf = document.getElementById('diagRSIConf');
+            rsiEl.textContent = rsiSignal.toUpperCase();
+            rsiEl.className = `signal-detail-value ${rsiSignal}`;
+            rsiConf.textContent = details.rsi?.confidence ? `${(details.rsi.confidence * 100).toFixed(0)}%` : '-';
+            
+            // MACD
+            const macdSignal = signals.macd || 'hold';
+            const macdEl = document.getElementById('diagMACD');
+            const macdConf = document.getElementById('diagMACDConf');
+            macdEl.textContent = macdSignal.toUpperCase();
+            macdEl.className = `signal-detail-value ${macdSignal}`;
+            macdConf.textContent = details.macd?.confidence ? `${(details.macd.confidence * 100).toFixed(0)}%` : '-';
+            
+            // Bollinger
+            const bollSignal = signals.bollinger || 'hold';
+            const bollEl = document.getElementById('diagBollinger');
+            const bollConf = document.getElementById('diagBollingerConf');
+            bollEl.textContent = bollSignal.toUpperCase();
+            bollEl.className = `signal-detail-value ${bollSignal}`;
+            bollConf.textContent = details.bollinger?.confidence ? `${(details.bollinger.confidence * 100).toFixed(0)}%` : '-';
+        }
+        
+        function updateConsensusDisplay(data) {
+            const signals = data.individual_signals || {};
+            const consensus = data.consensus || {};
+            
+            let buyCount = 0, sellCount = 0, holdCount = 0;
+            Object.values(signals).forEach(s => {
+                if (s === 'buy') buyCount++;
+                else if (s === 'sell') sellCount++;
+                else holdCount++;
+            });
+            
+            const total = buyCount + sellCount + holdCount;
+            const threshold = consensus.threshold || 2;
+            
+            // Update consensus bar
+            const buySeg = document.getElementById('consensusBuy');
+            const holdSeg = document.getElementById('consensusHold');
+            const sellSeg = document.getElementById('consensusSell');
+            
+            buySeg.textContent = `BUY ${buyCount}/${total}`;
+            buySeg.className = `consensus-segment ${buyCount >= threshold ? 'buy' : 'inactive'}`;
+            
+            holdSeg.textContent = `HOLD ${holdCount}/${total}`;
+            holdSeg.className = `consensus-segment neutral`;
+            
+            sellSeg.textContent = `SELL ${sellCount}/${total}`;
+            sellSeg.className = `consensus-segment ${sellCount >= threshold ? 'sell' : 'inactive'}`;
+            
+            // Update threshold text
+            document.getElementById('consensusThreshold').textContent = 
+                `Threshold: ${threshold}/${total} strategies required`;
+            
+            // Update overall recommendation
+            if (consensus.action && consensus.action !== 'hold') {
+                const action = consensus.action.toUpperCase();
+                const conf = consensus.confidence ? `(${(consensus.confidence * 100).toFixed(0)}%)` : '';
+                document.getElementById('consensusThreshold').textContent += ` → ${action} ${conf}`;
+            }
+        }
+        
+        function updateDecisionLog(decisions) {
+            const container = document.getElementById('decisionLog');
+            
+            if (!decisions || decisions.length === 0) {
+                container.innerHTML = '<div class="decision-item empty">No decisions yet. Start the agent to see trade logic.</div>';
+                return;
+            }
+            
+            container.innerHTML = decisions.slice(0, 10).map(d => {
+                const time = new Date(d.timestamp).toLocaleTimeString();
+                const actionClass = d.action || 'hold';
+                const symbol = d.symbol || '-';
+                const reason = d.reason || '-';
+                const conf = d.confidence ? `${(d.confidence * 100).toFixed(0)}%` : '-';
+                
+                return `
+                    <div class="decision-item">
+                        <div class="decision-time">${time}</div>
+                        <div>
+                            <span class="decision-action ${actionClass}">${d.action?.toUpperCase()}</span>
+                            <strong>${symbol}</strong>
+                            <span style="color:var(--text-muted)">(${conf})</span>
+                        </div>
+                        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">${reason}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateBlockers(data) {
+            const container = document.getElementById('blockersList');
+            const blockers = [];
+            
+            // Check various conditions
+            if (!data.status || data.status === 'stopped') {
+                blockers.push({ type: 'info', text: 'Agent not started yet' });
+            }
+            
+            if (data.status === 'paused') {
+                blockers.push({ type: 'warning', text: 'Agent is paused' });
+            }
+            
+            if (data.daily_trades >= (data.config?.max_daily_trades || 10)) {
+                blockers.push({ type: 'error', text: 'Max daily trades reached' });
+            }
+            
+            if (data.positions_count >= (data.config?.max_positions || 3)) {
+                blockers.push({ type: 'error', text: 'Max positions reached' });
+            }
+            
+            if (data.recent_errors && data.recent_errors.length > 0) {
+                blockers.push({ type: 'error', text: `Recent errors: ${data.recent_errors[data.recent_errors.length - 1]}` });
+            }
+            
+            if (blockers.length === 0) {
+                if (data.status === 'running') {
+                    blockers.push({ type: 'success', text: 'Agent running normally - No blockers' });
+                } else {
+                    blockers.push({ type: 'info', text: 'Waiting for agent to start' });
+                }
+            }
+            
+            container.innerHTML = blockers.map(b => `
+                <div class="blocker-item ${b.type}">
+                    <span class="blocker-icon">${b.type === 'info' ? 'ℹ️' : b.type === 'warning' ? '⚠️' : b.type === 'error' ? '❌' : '✅'}</span>
+                    <span>${b.text}</span>
+                </div>
+            `).join('');
+        }
+        
+        async function forceStrategyScan() {
+            showToast('Running strategy scan...', 'info');
+            await refreshDiagnostics();
+            showToast('Scan complete', 'success');
+        }
+        
+        async function testTradeLogic() {
+            if (!lastStrategyData) {
+                showToast('No strategy data available. Run scan first.', 'warning');
+                return;
+            }
+            
+            const consensus = lastStrategyData.consensus || {};
+            const action = consensus.action || 'hold';
+            const confidence = consensus.confidence || 0;
+            
+            let message = '';
+            if (action === 'hold') {
+                message = `Would HOLD: ${consensus.reason || 'No consensus reached'}`;
+            } else {
+                message = `Would ${action.toUpperCase()} with ${(confidence * 100).toFixed(0)}% confidence`;
+            }
+            
+            showToast(message, action === 'hold' ? 'info' : 'success');
+            
+            // Add to decision log as simulation
+            const simulatedDecision = [{
+                timestamp: new Date().toISOString(),
+                action: action,
+                symbol: document.getElementById('symbolSelect').value,
+                confidence: confidence,
+                reason: '[TEST] ' + (consensus.reason || 'Simulation')
+            }];
+            updateDecisionLog(simulatedDecision);
+        }
+        
+        async function resetAgentState() {
+            if (!confirm('Reset agent state? This will clear trades today count and errors.')) return;
+            
+            try {
+                const agentId = `agent_${currentAccount.slice(0,8)}`;
+                const res = await fetch(`${API_BASE}/agent/control/${agentId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'reset' })
+                });
+                
+                if (res.ok) {
+                    showToast('Agent state reset', 'success');
+                    refreshDiagnostics();
+                } else {
+                    showToast('Failed to reset', 'error');
+                }
+            } catch (e) {
+                showToast('Error resetting agent', 'error');
             }
         }
         
