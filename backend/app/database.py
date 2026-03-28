@@ -63,6 +63,16 @@ class PaperPosition(Base):
     unrealized_pnl = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     is_open = Column(Boolean, default=True)
+    
+    # SL/TP tracking
+    stop_loss_price = Column(Float, nullable=True)
+    take_profit_price = Column(Float, nullable=True)
+    stop_loss_pct = Column(Float, nullable=True)
+    take_profit_pct = Column(Float, nullable=True)
+    
+    # SL/TP execution tracking
+    sl_tp_triggered = Column(String, nullable=True)  # 'stop_loss', 'take_profit', or None
+    sl_tp_triggered_at = Column(DateTime, nullable=True)
 
 
 class PaperOrder(Base):
@@ -129,6 +139,37 @@ class UserConfig(Base):
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AgentDecisionHistory(Base):
+    """Historial permanente de decisiones del agente de trading"""
+    __tablename__ = "agent_decision_history"
+    
+    id = Column(String, primary_key=True)
+    agent_id = Column(String, nullable=False, index=True)
+    account_id = Column(String, nullable=False, index=True)
+    
+    # Decision details
+    symbol = Column(String, nullable=False)
+    action = Column(String, nullable=False)  # buy, sell, hold
+    confidence = Column(Float, nullable=False)
+    reason = Column(String, nullable=True)
+    
+    # Strategy signals at decision time
+    signals_json = Column(JSON, nullable=True)  # {rsi: 'buy', macd: 'hold', bollinger: 'buy'}
+    consensus_threshold = Column(Integer, default=2)
+    
+    # Was a trade executed?
+    trade_executed = Column(Boolean, default=False)
+    order_id = Column(String, nullable=True)
+    
+    # Kimi API enhancement (if used)
+    kimi_enhanced = Column(Boolean, default=False)
+    kimi_confidence = Column(Float, nullable=True)
+    
+    # Market context
+    price_at_decision = Column(Float, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
 
 async def init_db():

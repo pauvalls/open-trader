@@ -23,11 +23,14 @@ import httpx
 
 from ..services.paper_trading_service import PaperTradingService
 from ..services.market_multi import MultiMarketService
+from ..services.alerts import AlertService
+from ..database import get_db, AgentDecisionHistory
 from ..strategies.rsi_strategy import RSIStrategy
 from ..strategies.macd_strategy import MACDStrategy
 from ..strategies.bollinger_strategy import BollingerStrategy
 from ..strategies.base_strategy import BaseStrategy
 
+alert_service = AlertService()
 logger = logging.getLogger(__name__)
 
 
@@ -315,6 +318,49 @@ class AITradingAgent:
             kimi_analysis=kimi_analysis
         )
         
+    async def _save_decision_to_history(self, decision: TradeDecision, trade_executed: bool = False, order_id: str = None):
+        """Save decision to permanent history in database"""
+        try:
+            async with get_db() as db:
+                from sqlalchemy import select
+                from ..database import AgentDecisionHistory
+                import uuid
+                
+                # Get current price
+                price_at_decision = None
+                try:
+                    ticker = await self.market_service.get_ticker(decision.symbol)
+                    price_at_decision = ticker.get('last')
+                except:
+                    pass
+                
+                # Create history entry
+                history_entry = AgentDecisionHistory(
+                    id=str(uuid.uuid4()),
+                    agent_id=f"agent_{self.config.account_id[:8]}",
+                    account_id=self.config.account_id,
+                    symbol=decision.symbol,
+                    action=decision.action.value,
+                    confidence=decision.confidence,
+                    reason=decision.reason,
+                    signals_json=decision.signals,
+                    consensus_threshold=self.config.consensus_threshold,
+                    trade_executed=trade_executed,
+                    order_id=order_id,
+                    kimi_enhanced=decision.kimi_analysis is not None,
+                    kimi_confidence=decision.kimi_analysis.get('confidence') if decision.kimi_analysis else None,
+                    price_at_decision=price_at_decision,
+                    timestamp=datetime.now()
+                )
+                
+                db.add(history_entry)
+                await db.commit()
+                
+                logger.info(f"📝 Decision saved to history: {decision.symbol} {decision.action.value}")
+                
+        except Exception as e:
+            logger.error(f"Failed to save decision history: {e}")
+        
     async def _get_strategy_signal(self, strategy, symbol: str) -> str:
         """
         Fallback method to get signal from legacy strategies
@@ -411,13 +457,16 @@ Respond in JSON format:
         decision: TradeDecision, 
         current_positions: Dict
     ):
-        """Execute a trading decision"""
+        """Execute a trading decision and save to history"""
         symbol = decision.symbol
+        order_id = None
+        trade_executed = False
         
         if decision.action == TradeAction.BUY:
             # Check position limits
             if len(current_positions) >= self.config.max_positions:
                 logger.warning(f"Max positions reached, skipping {symbol}")
+                await self._save_decision_to_history(decision, trade_executed=False)
                 return
                 
             # Execute buy order
@@ -433,6 +482,8 @@ Respond in JSON format:
                 
                 self.state.trades_today += 1
                 self.state.positions_opened += 1
+                trade_executed = True
+                order_id = order.get('id')
                 logger.info(f"✅ BUY executed: ${decision.amount:.2f} USD of {symbol} with SL:{self.config.stop_loss_pct}% TP:{self.config.take_profit_pct}%")
                 
             except Exception as e:
@@ -445,7 +496,7 @@ Respond in JSON format:
                 try:
                     # Calculate position value in USD
                     position_value_usd = position['amount'] * position.get('current_price', position['entry_price'])
-                    await self.trading_service.create_order(
+                    order = await self.trading_service.create_order(
                         account_id=self.config.account_id,
                         symbol=symbol,
                         side="sell",
@@ -453,11 +504,16 @@ Respond in JSON format:
                     )
                     self.state.trades_today += 1
                     self.state.positions_closed += 1
+                    trade_executed = True
+                    order_id = order.get('id')
                     logger.info(f"✅ SELL executed: ${position_value_usd:.2f} USD of {symbol}")
                     
                 except Exception as e:
                     logger.error(f"Failed to execute sell: {e}")
-                    
+        
+        # Save decision to history (even if no trade was executed)
+        await self._save_decision_to_history(decision, trade_executed, order_id)
+        
     async def _set_bracket_orders(
         self, 
         symbol: str, 

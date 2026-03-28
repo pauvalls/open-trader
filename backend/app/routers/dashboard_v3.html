@@ -2176,6 +2176,44 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Decision History Panel -->
+                <div class="card" style="margin-top:var(--space-lg)">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>📊</span> Decision History
+                        </div>
+                        <div style="display:flex;gap:var(--space-sm)">
+                            <button class="btn btn-sm" onclick="loadDecisionHistory()">🔄 Refresh</button>
+                            <button class="btn btn-sm" onclick="clearDecisionHistory()">🗑️ Clear</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="decision-history-filters" style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-md)">
+                            <select class="form-select" id="historyFilterAction" onchange="loadDecisionHistory()" style="flex:1">
+                                <option value="all">All Actions</option>
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                                <option value="hold">Hold</option>
+                            </select>
+                            <select class="form-select" id="historyFilterExecuted" onchange="loadDecisionHistory()" style="flex:1">
+                                <option value="all">All Decisions</option>
+                                <option value="executed">Trades Executed</option>
+                                <option value="not_executed">No Trade</option>
+                            </select>
+                        </div>
+                        
+                        <div class="decision-history-list" id="decisionHistoryList" style="max-height:400px;overflow-y:auto">
+                            <div class="decision-item empty">No decisions yet. Start the agent to see history.</div>
+                        </div>
+                        
+                        <div class="decision-history-pagination" style="display:flex;justify-content:center;gap:var(--space-sm);margin-top:var(--space-md)">
+                            <button class="btn btn-sm" onclick="loadDecisionHistory(historyOffset - historyLimit)" id="historyPrevBtn">← Previous</button>
+                            <span id="historyPageInfo" style="padding:8px 16px;font-size:13px;color:var(--text-secondary)">Page 1</span>
+                            <button class="btn btn-sm" onclick="loadDecisionHistory(historyOffset + historyLimit)" id="historyNextBtn">Next →</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -2590,6 +2628,7 @@
             if (tab === 'agent') {
                 refreshDiagnostics();
                 startDiagnosticsPolling();
+                loadDecisionHistory();
             } else {
                 stopDiagnosticsPolling();
             }
@@ -3514,6 +3553,106 @@
             } catch (e) {
                 showToast('Error resetting agent', 'error');
             }
+        }
+        
+        // ===== Decision History =====
+        let historyOffset = 0;
+        let historyLimit = 50;
+        let decisionHistoryCache = [];
+        
+        async function loadDecisionHistory(offset = 0) {
+            if (!currentAccount) {
+                document.getElementById('decisionHistoryList').innerHTML = '<div class="decision-item empty">Select an account to view decision history.</div>';
+                return;
+            }
+            
+            historyOffset = Math.max(0, offset);
+            
+            try {
+                const res = await fetch(`${API_BASE}/agent/decisions/${currentAccount}?limit=${historyLimit}&offset=${historyOffset}`);
+                if (!res.ok) throw new Error('Failed to load history');
+                
+                const data = await res.json();
+                decisionHistoryCache = data.decisions || [];
+                
+                // Apply filters
+                const actionFilter = document.getElementById('historyFilterAction')?.value || 'all';
+                const executedFilter = document.getElementById('historyFilterExecuted')?.value || 'all';
+                
+                let filtered = decisionHistoryCache;
+                if (actionFilter !== 'all') {
+                    filtered = filtered.filter(d => d.action === actionFilter);
+                }
+                if (executedFilter === 'executed') {
+                    filtered = filtered.filter(d => d.trade_executed);
+                } else if (executedFilter === 'not_executed') {
+                    filtered = filtered.filter(d => !d.trade_executed);
+                }
+                
+                renderDecisionHistory(filtered);
+                
+                // Update pagination
+                document.getElementById('historyPageInfo').textContent = `Page ${Math.floor(historyOffset / historyLimit) + 1}`;
+                document.getElementById('historyPrevBtn').disabled = historyOffset === 0;
+                document.getElementById('historyNextBtn').disabled = decisionHistoryCache.length < historyLimit;
+                
+            } catch (e) {
+                console.error('Load history error:', e);
+                document.getElementById('decisionHistoryList').innerHTML = '<div class="decision-item empty">Error loading history.</div>';
+            }
+        }
+        
+        function renderDecisionHistory(decisions) {
+            const container = document.getElementById('decisionHistoryList');
+            
+            if (!decisions || decisions.length === 0) {
+                container.innerHTML = '<div class="decision-item empty">No decisions found. Start the agent to begin trading.</div>';
+                return;
+            }
+            
+            container.innerHTML = decisions.map(d => {
+                const time = new Date(d.timestamp).toLocaleString();
+                const actionClass = d.action || 'hold';
+                const executedBadge = d.trade_executed ? '<span style="background:var(--color-profit);color:#000;padding:2px 6px;border-radius:4px;font-size:10px">EXECUTED</span>' : '<span style="background:var(--bg-elevated);color:var(--text-muted);padding:2px 6px;border-radius:4px;font-size:10px">NO TRADE</span>';
+                const kimiBadge = d.kimi_enhanced ? '<span style="background:var(--accent-primary);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px">AI</span>' : '';
+                
+                // Parse signals
+                let signalsHtml = '';
+                if (d.signals) {
+                    const signalColors = { buy: 'var(--color-long)', sell: 'var(--color-short)', hold: 'var(--text-muted)' };
+                    signalsHtml = Object.entries(d.signals).map(([k, v]) => 
+                        `<span style="color:${signalColors[v] || 'inherit'};font-size:11px">${k.toUpperCase()}: ${v.toUpperCase()}</span>`
+                    ).join(' | ');
+                }
+                
+                return `
+                    <div class="decision-item" style="border-left:3px solid ${actionClass === 'buy' ? 'var(--color-long)' : actionClass === 'sell' ? 'var(--color-short)' : 'var(--text-muted)'};padding-left:12px;margin-bottom:12px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                            <div>
+                                <span class="decision-action ${actionClass}">${d.action?.toUpperCase()}</span>
+                                <strong>${d.symbol}</strong>
+                                ${executedBadge}
+                                ${kimiBadge}
+                            </div>
+                            <span style="font-size:11px;color:var(--text-muted)">${time}</span>
+                        </div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">
+                            ${d.reason || '-'}
+                        </div>
+                        <div style="display:flex;gap:var(--space-md);font-size:11px;color:var(--text-muted)">
+                            <span>Confidence: ${(d.confidence * 100).toFixed(0)}%</span>
+                            <span>Threshold: ${d.consensus_threshold}/3</span>
+                            ${d.price_at_decision ? `<span>Price: $${d.price_at_decision.toFixed(2)}</span>` : ''}
+                        </div>
+                        ${signalsHtml ? `<div style="margin-top:4px">${signalsHtml}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function clearDecisionHistory() {
+            if (!confirm('Clear decision history from view? (Data is preserved in database)')) return;
+            document.getElementById('decisionHistoryList').innerHTML = '<div class="decision-item empty">History cleared from view. Refresh to load again.</div>';
         }
         
         // ===== Toast Notifications =====

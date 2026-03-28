@@ -280,6 +280,59 @@ async def update_agent_config(
     }
 
 
+@router.get("/decisions/{account_id}")
+async def get_decision_history(
+    account_id: str,
+    limit: int = 100,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get permanent history of agent decisions for an account.
+    
+    - **limit**: Number of decisions to return (default 100, max 1000)
+    - **offset**: Offset for pagination
+    
+    Returns all decisions (buy/sell/hold) with their context,
+    including those that didn't result in trades.
+    """
+    from sqlalchemy import select, desc
+    from ..database import AgentDecisionHistory
+    
+    result = await db.execute(
+        select(AgentDecisionHistory)
+        .where(AgentDecisionHistory.account_id == account_id)
+        .order_by(desc(AgentDecisionHistory.timestamp))
+        .limit(min(limit, 1000))
+        .offset(offset)
+    )
+    
+    decisions = result.scalars().all()
+    
+    return {
+        "decisions": [
+            {
+                "id": d.id,
+                "symbol": d.symbol,
+                "action": d.action,
+                "confidence": d.confidence,
+                "reason": d.reason,
+                "signals": d.signals_json,
+                "consensus_threshold": d.consensus_threshold,
+                "trade_executed": d.trade_executed,
+                "order_id": d.order_id,
+                "kimi_enhanced": d.kimi_enhanced,
+                "kimi_confidence": d.kimi_confidence,
+                "price_at_decision": d.price_at_decision,
+                "timestamp": d.timestamp.isoformat() if d.timestamp else None
+            }
+            for d in decisions
+        ],
+        "total": len(decisions),
+        "account_id": account_id
+    }
+
+
 @router.get("/list")
 async def list_all_agents():
     """List all created agents and their status"""

@@ -96,7 +96,11 @@ class PaperTradingService:
                     "entry_price": float(pos.entry_price),
                     "current_price": float(current_price),
                     "unrealized_pnl": float(pnl),
-                    "opened_at": pos.opened_at.isoformat() if pos.opened_at else None
+                    "opened_at": pos.created_at.isoformat() if pos.created_at else None,
+                    "stop_loss_price": float(pos.stop_loss_price) if pos.stop_loss_price else None,
+                    "take_profit_price": float(pos.take_profit_price) if pos.take_profit_price else None,
+                    "stop_loss_pct": pos.stop_loss_pct,
+                    "take_profit_pct": pos.take_profit_pct
                 })
             
             return {
@@ -190,14 +194,18 @@ class PaperTradingService:
                 
                 account.current_balance_usd -= (amount_usd_decimal + fee)
                 
-                # Create position with the calculated crypto amount
+                # Create position with the calculated crypto amount and SL/TP
                 position = PaperPosition(
                     account_id=account_id,
                     symbol=symbol,
                     side='long',
                     amount=crypto_amount,
                     entry_price=price,
-                    unrealized_pnl=Decimal("0")
+                    unrealized_pnl=Decimal("0"),
+                    stop_loss_price=Decimal(str(metadata.get('stop_loss_price', 0))) if stop_loss_pct else None,
+                    take_profit_price=Decimal(str(metadata.get('take_profit_price', 0))) if take_profit_pct else None,
+                    stop_loss_pct=stop_loss_pct,
+                    take_profit_pct=take_profit_pct
                 )
                 db.add(position)
                 

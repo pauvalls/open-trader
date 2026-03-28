@@ -22,8 +22,14 @@ async def lifespan(app: FastAPI):
     # Initialize database
     await init_db()
     
+    # Start SL/TP Monitor Service
+    from app.services.sltp_monitor import get_sltp_monitor
+    sltp_monitor = get_sltp_monitor()
+    await sltp_monitor.start()
+    
     # Log available routes for debugging
     print("🚀 Open Trader v0.5.0 iniciado")
+    print("🎯 SL/TP Monitor started")
     print("📡 Routes loaded:")
     for route in app.routes:
         if hasattr(route, 'methods'):
@@ -31,6 +37,10 @@ async def lifespan(app: FastAPI):
             print(f"  {methods} {route.path}")
     
     yield
+    
+    # Stop SL/TP Monitor
+    await sltp_monitor.stop()
+    
     print("👋 Open Trader detenido")
 
 
