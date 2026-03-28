@@ -6,10 +6,14 @@ from typing import Dict, List, Optional
 import pandas as pd
 
 from app.services.market import MarketService
+from app.services.alerts import AlertService
 from app.strategies.rsi_strategy import RSIStrategy
+from app.strategies.macd_strategy import MACDStrategy
+from app.strategies.bollinger_strategy import BollingerStrategy
 
 router = APIRouter()
 market_service = MarketService()
+alert_service = AlertService()
 
 
 class BacktestRequest(BaseModel):
@@ -33,19 +37,20 @@ AVAILABLE_STRATEGIES = {
     },
     "macd": {
         "name": "MACD Strategy", 
-        "description": "Señales basadas en cruce de MACD",
+        "description": "Señales basadas en cruce de MACD y línea de señal",
         "params": {
             "fast": 12,
             "slow": 26,
             "signal": 9
         }
     },
-    "sma_cross": {
-        "name": "SMA Cross",
-        "description": "Cruce de medias móviles simples",
+    "bollinger": {
+        "name": "Bollinger Bands",
+        "description": "Trading con bandas de Bollinger - compra en banda inferior, venta en superior",
         "params": {
-            "fast_period": 20,
-            "slow_period": 50
+            "period": 20,
+            "std_dev": 2.0,
+            "use_confirmation": True
         }
     }
 }
@@ -82,8 +87,13 @@ async def run_backtest(strategy_name: str, req: BacktestRequest):
     if strategy_name == "rsi":
         strategy = RSIStrategy(req.strategy_params)
         results = strategy.backtest(df, req.initial_balance)
+    elif strategy_name == "macd":
+        strategy = MACDStrategy(req.strategy_params)
+        results = strategy.backtest(df, req.initial_balance)
+    elif strategy_name == "bollinger":
+        strategy = BollingerStrategy(req.strategy_params)
+        results = strategy.backtest(df, req.initial_balance)
     else:
-        # Placeholder para otras estrategias
         results = {
             "strategy": strategy_name,
             "status": "not_implemented",
@@ -109,13 +119,108 @@ async def get_signal(strategy_name: str, symbol: str, timeframe: str = "1h"):
     if strategy_name == "rsi":
         strategy = RSIStrategy()
         signal = strategy.get_signal(df)
-        return {
-            "symbol": symbol,
-            "strategy": strategy_name,
-            "signal": signal["action"],  # buy, sell, hold
-            "rsi": signal.get("rsi"),
-            "price": signal.get("price"),
-            "timestamp": signal.get("timestamp")
+        extra_info = {"rsi": signal.get("rsi")}
+    elif strategy_name == "macd":
+        strategy = MACDStrategy()
+        signal = strategy.get_signal(df)
+        extra_info = {
+            "macd": signal.get("macd"),
+            "signal": signal.get("signal"),
+            "histogram": signal.get("histogram")
         }
+    elif strategy_name == "bollinger":
+        strategy = BollingerStrategy()
+        signal = strategy.get_signal(df)
+        extra_info = {
+            "sma": signal.get("sma"),
+            "upper": signal.get("upper"),
+            "lower": signal.get("lower"),
+            "percent_b": signal.get("percent_b")
+        }
+    else:
+        return {"error": "Estrategia no implementada"}
     
-    return {"error": "Estrategia no implementada para señales en tiempo real"}
+    # Enviar alerta si hay señal de compra o venta
+    if signal["action"] in ["buy", "sell"]:
+        await alert_service.send_signal_alert(
+            strategy=strategy_name.upper(),
+            symbol=symbol,
+            action=signal["action"],
+            price=signal["price"],
+            extra_info=extra_info
+        )
+    
+    return {
+        "symbol": symbol,
+        "strategy": strategy_name,
+        "signal": signal["action"],
+        "price": signal.get("price"),
+        "timestamp": signal.get("timestamp"),
+        "indicators": extra_info
+    }
+
+
+@router.post("/scan")
+async def scan_all_strategies(symbol: str, timeframe: str = "1h"):
+    """Escanea todas las estrategias y devuelve consenso"""
+    
+    klines = await market_service.get_klines(symbol, timeframe, limit=100)
+    if not klines:
+        raise HTTPException(status_code=400, detail="No se pudieron obtener datos")
+    
+    df = pd.DataFrame(klines)
+    signals = {}
+    
+    # RSI
+    rsi_strategy = RSIStrategy()
+    rsi_signal = rsi_strategy.get_signal(df)
+    signals["rsi"] = rsi_signal["action"]
+    
+    # MACD
+    macd_strategy = MACDStrategy()
+    macd_signal = macd_strategy.get_signal(df)
+    signals["macd"] = macd_signal["action"]
+    
+    # Bollinger
+    bb_strategy = BollingerStrategy()
+    bb_signal = bb_strategy.get_signal(df)
+    signals["bollinger"] = bb_signal["action"]
+    
+    # Contar votos
+    buy_votes = sum(1 for s in signals.values() if s == "buy")
+    sell_votes = sum(1 for s in signals.values() if s == "sell")
+    hold_votes = sum(1 for s in signals.values() if s == "hold")
+    
+    # Consenso
+    if buy_votes >= 2:
+        consensus = "buy"
+    elif sell_votes >= 2:
+        consensus = "sell"
+    else:
+        consensus = "hold"
+    
+    current_price = df['close'].iloc[-1]
+    
+    # Enviar alerta si hay consenso fuerte
+    if consensus in ["buy", "sell"]:
+        await alert_service.send_signal_alert(
+            strategy="CONSENSO MULTI-ESTRATEGIA",
+            symbol=symbol,
+            action=consensus,
+            price=current_price,
+            extra_info={
+                "rsi": signals["rsi"],
+                "macd": signals["macd"],
+                "bollinger": signals["bollinger"]
+            }
+        )
+    
+    return {
+        "symbol": symbol,
+        "price": current_price,
+        "individual_signals": signals,
+        "consensus": consensus,
+        "buy_votes": buy_votes,
+        "sell_votes": sell_votes,
+        "hold_votes": hold_votes
+    }

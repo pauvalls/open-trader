@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import paper_trading, market_data, strategies, health
+from app.routers import paper_trading, market_data, strategies, health, dashboard
 
 
 @asynccontextmanager
@@ -26,8 +26,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Open Trader API",
     description="Sistema de trading algorítmico con paper trading y Uniswap V3",
-    version="0.1.0",
-    lifespan=lifespan
+    version="0.2.0",
+    lifespan=lifespan,
+    docs_url="/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
+    redoc_url="/redoc" if os.getenv("DEBUG", "false").lower() == "true" else None
 )
 
 # CORS - ajustar en producción
@@ -41,6 +43,7 @@ app.add_middleware(
 
 # Routers
 app.include_router(health.router, prefix="/health", tags=["Health"])
+app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(paper_trading.router, prefix="/paper", tags=["Paper Trading"])
 app.include_router(market_data.router, prefix="/market", tags=["Market Data"])
 app.include_router(strategies.router, prefix="/strategies", tags=["Estrategias"])
@@ -50,7 +53,19 @@ app.include_router(strategies.router, prefix="/strategies", tags=["Estrategias"]
 async def root():
     return {
         "name": "Open Trader",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "status": "running",
-        "mode": "paper_trading"
+        "mode": "paper_trading",
+        "docs": "/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
+        "dashboard": "/dashboard/"
+    }
+
+
+@app.get("/version")
+async def version():
+    """Get current API version"""
+    return {
+        "version": "0.2.0",
+        "release_date": "2024-03-28",
+        "changelog": "https://github.com/pauvalls/open-trader/blob/main/CHANGELOG.md"
     }

@@ -3,8 +3,9 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
+      target: production
     container_name: open-trader-backend
     restart: unless-stopped
     ports:
@@ -12,27 +13,35 @@ services:
     environment:
       - API_HOST=0.0.0.0
       - API_PORT=8000
-      - DATABASE_URL=sqlite+aiosqlite:///./data/paper_trading.db
       - DEBUG=false
-      # Genera una clave segura para producción
+      - DATABASE_URL=sqlite+aiosqlite:///./data/paper_trading.db
+      # Generate a secure key: openssl rand -hex 32
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      # Optional: Telegram alerts
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      # Optional: Discord alerts
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
     volumes:
+      # Persist database
       - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
     networks:
       - open-trader
-
-  # Opcional: Frontend (cuando lo tengamos)
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #   container_name: open-trader-frontend
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - open-trader
+    # Resource limits (adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
 
 networks:
   open-trader:

@@ -1,0 +1,24 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2 --proxy-headers"
+healthcheckPath = "/health/"
+healthcheckTimeout = 10
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[deploy.envVars]
+PYTHONUNBUFFERED = "1"
+PYTHONDONTWRITEBYTECODE = "1"
+API_HOST = "0.0.0.0"
+API_PORT = "$PORT"
+DEBUG = "false"
+DATABASE_URL = "sqlite+aiosqlite:///./data/paper_trading.db"
+
+# Secrets (set these in Railway dashboard):
+# - SECRET_KEY
+# - TELEGRAM_BOT_TOKEN
+# - TELEGRAM_CHAT_ID
+# - DISCORD_WEBHOOK_URL

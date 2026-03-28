@@ -11,9 +11,11 @@ from pydantic import BaseModel
 
 from app.database import get_db, PaperAccount, PaperOrder, PaperPosition
 from app.services.market import MarketService
+from app.services.alerts import AlertService
 
 router = APIRouter()
 market_service = MarketService()
+alert_service = AlertService()
 
 
 class CreateAccountRequest(BaseModel):
@@ -221,6 +223,15 @@ async def create_order(
     
     db.add(order)
     await db.commit()
+    
+    # Enviar alerta de orden ejecutada
+    await alert_service.send_order_alert(
+        symbol=order.symbol,
+        side=order.side,
+        amount=order.amount,
+        price=order.price,
+        pnl=order.pnl
+    )
     
     return {
         "order_id": order.id,
