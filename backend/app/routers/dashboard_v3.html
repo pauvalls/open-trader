@@ -798,6 +798,163 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        /* Tutorial Modal */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .tutorial-overlay.active {
+            display: flex;
+        }
+        
+        .tutorial-modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tutorial-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .tutorial-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .tutorial-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+        }
+        
+        .tutorial-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .tutorial-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .tutorial-step {
+            display: none;
+        }
+        
+        .tutorial-step.active {
+            display: block;
+        }
+        
+        .tutorial-step h3 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: var(--accent-primary);
+        }
+        
+        .tutorial-step p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        
+        .tutorial-step strong {
+            color: var(--text-primary);
+        }
+        
+        .tutorial-step ul {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+        
+        .tutorial-step li {
+            margin: 8px 0;
+            color: var(--text-secondary);
+        }
+        
+        .tutorial-step .highlight-box {
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--accent-primary);
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: var(--radius-md);
+        }
+        
+        .tutorial-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tutorial-progress {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .tutorial-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-color);
+        }
+        
+        .tutorial-dot.active {
+            background: var(--accent-primary);
+        }
+        
+        .tutorial-nav {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .api-key-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        .api-key-status.saved {
+            color: var(--color-profit);
+        }
+        
+        .api-key-status.unsaved {
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -1177,7 +1334,8 @@
                                 <div class="config-section">
                                     <div class="config-title">Kimi API Key (Optional)</div>
                                     <input type="password" class="form-input" id="kimiApiKey" placeholder="Enter API key for AI-enhanced mode">
-                                    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">Leave empty to use technical analysis only</p>
+                                    <div class="api-key-status unsaved" id="apiKeyStatus">Not saved (device only)</div>
+                                    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">Leave empty to use technical analysis only. The key is encrypted and stored securely.</p>
                                 </div>
                                 
                                 <button class="btn btn-primary" style="width:100%" onclick="saveAgentConfig()">
@@ -1193,6 +1351,176 @@
     
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- Tutorial Modal -->
+    <div class="tutorial-overlay" id="tutorialModal">
+        <div class="tutorial-modal">
+            <div class="tutorial-header">
+                <div class="tutorial-title">📚 <span data-i18n="tutorialTitle">Open Trader Tutorial</span></div>
+                <button class="tutorial-close" onclick="closeTutorial()">×</button>
+            </div>
+            <div class="tutorial-body">
+                <!-- Step 1: Welcome -->
+                <div class="tutorial-step active" data-step="1">
+                    <h3 data-i18n="tutWelcomeTitle">¡Bienvenido a Open Trader!</h3>
+                    <p data-i18n="tutWelcomeText">Tu plataforma de trading algorítmico con dinero ficticio pero precios reales.</p>
+                    <div class="highlight-box">
+                        <strong data-i18n="tutPaperTrading">¿Qué es Paper Trading?</strong>
+                        <p data-i18n="tutPaperTradingDesc">Es una simulación de trading donde usas dinero ficticio ($10,000 por defecto) pero con precios del mercado real. Perfecto para practicar sin riesgo.</p>
+                    </div>
+                    <p data-i18n="tutThisTutorial">Este tutorial te guiará en 7 pasos para dominar la plataforma:</p>
+                    <ul>
+                        <li data-i18n="tutStep1">1. Crear tu cuenta</li>
+                        <li data-i18n="tutStep2">2. Entender el trading (LONG vs SHORT)</li>
+                        <li data-i18n="tutStep3">3. Leer el gráfico</li>
+                        <li data-i18n="tutStep4">4. Ejecutar tu primera operación</li>
+                        <li data-i18n="tutStep5">5. Gestión de riesgo (SL/TP)</li>
+                        <li data-i18n="tutStep6">6. Usar las estrategias</li>
+                        <li data-i18n="tutStep7">7. Configurar el Agente AI</li>
+                    </ul>
+                </div>
+                
+                <!-- Step 2: Accounts -->
+                <div class="tutorial-step" data-step="2">
+                    <h3 data-i18n="tutAccountTitle">Paso 1: Crear tu Cuenta</h3>
+                    <p data-i18n="tutAccountText">Primero necesitas una cuenta de paper trading:</p>
+                    <div class="highlight-box">
+                        <strong data-i18n="tutHowToCreate">Cómo crear una cuenta:</strong>
+                        <ol style="margin-top:8px;padding-left:20px">
+                            <li data-i18n="tutAccount1">Ve al sidebar izquierdo</li>
+                            <li data-i18n="tutAccount2">Haz clic en "+ Crear Nueva"</li>
+                            <li data-i18n="tutAccount3">¡Listo! Tu cuenta tiene $10,000 virtuales</li>
+                        </ol>
+                    </div>
+                    <p data-i18n="tutMultipleAccounts">💡 Puedes crear múltiples cuentas para probar diferentes estrategias.</p>
+                </div>
+                
+                <!-- Step 3: Long vs Short -->
+                <div class="tutorial-step" data-step="3">
+                    <h3 data-i18n="tutLongShortTitle">Paso 2: LONG vs SHORT</h3>
+                    <p data-i18n="tutLongShortText">En trading puedes ganar dinero tanto si el precio sube como si baja:</p>
+                    <div class="highlight-box">
+                        <strong style="color:var(--color-profit)" data-i18n="tutLong">📈 LONG (Largo)</strong>
+                        <p data-i18n="tutLongDesc">Apuestas a que el precio SUBIRÁ. Compras barato y vendes caro.</p>
+                    </div>
+                    <div class="highlight-box">
+                        <strong style="color:var(--color-loss)" data-i18n="tutShort">📉 SHORT (Corto)</strong>
+                        <p data-i18n="tutShortDesc">Apuestas a que el precio BAJARÁ. Vendes caro y recompras barato.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Charts -->
+                <div class="tutorial-step" data-step="4">
+                    <h3 data-i18n="tutChartTitle">Paso 3: Leer el Gráfico</h3>
+                    <p data-i18n="tutChartText">El gráfico muestra la evolución del precio en el tiempo:</p>
+                    <ul>
+                        <li data-i18n="tutChart1"><strong>Línea verde:</strong> Tendencia alcista (precio subiendo)</li>
+                        <li data-i18n="tutChart2"><strong>Línea roja:</strong> Tendencia bajista (precio bajando)</li>
+                        <li data-i18n="tutChart3"><strong>Timeframe:</strong> 15m, 1h, 4h, 1D (velas de 15 minutos, 1 hora...)</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <strong data-i18n="tutChartTip">💡 Consejo:</strong>
+                        <p data-i18n="tutChartTipDesc">Para empezar, usa 1h (1 hora). Es un buen balance entre ruido y señal.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Execute Trade -->
+                <div class="tutorial-step" data-step="5">
+                    <h3 data-i18n="tutTradeTitle">Paso 4: Ejecutar tu Primera Operación</h3>
+                    <p data-i18n="tutTradeText">Para abrir una posición:</p>
+                    <ol style="padding-left:20px">
+                        <li data-i18n="tutTrade1">Selecciona el par (ej: ETH/USDT)</li>
+                        <li data-i18n="tutTrade2">Elige LONG o SHORT</li>
+                        <li data-i18n="tutTrade3">Introduce la cantidad en USD</li>
+                        <li data-i18n="tutTrade4">Haz clic en "Ejecutar"</li>
+                    </ol>
+                    <div class="highlight-box">
+                        <strong data-i18n="tutFees">Comisiones:</strong>
+                        <p data-i18n="tutFeesDesc">Se simula una comisión del 0.1% por operación, como en exchanges reales.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 6: Risk Management -->
+                <div class="tutorial-step" data-step="6">
+                    <h3 data-i18n="tutRiskTitle">Paso 5: Gestión de Riesgo (SL/TP)</h3>
+                    <p data-i18n="tutRiskText">Protege tu capital con Stop Loss y Take Profit:</p>
+                    <div class="highlight-box">
+                        <strong style="color:var(--color-loss)" data-i18n="tutSL">🛑 Stop Loss (SL)</strong>
+                        <p data-i18n="tutSLDesc">Precio donde se cierra automáticamente la operación si va en contra. Limita tus pérdidas.</p>
+                    </div>
+                    <div class="highlight-box">
+                        <strong style="color:var(--color-profit)" data-i18n="tutTP">🎯 Take Profit (TP)</strong>
+                        <p data-i18n="tutTPDesc">Precio donde se cierra automáticamente la operación si va a favor. Asegura ganancias.</p>
+                    </div>
+                    <p data-i18n="tutRiskReward"><strong>Ratio Riesgo/Beneficio:</strong> Busca mínimo 1:2 (riesgo $1 para ganar $2)</p>
+                </div>
+                
+                <!-- Step 7: Strategies -->
+                <div class="tutorial-step" data-step="7">
+                    <h3 data-i18n="tutStrategyTitle">Paso 6: Estrategias Técnicas</h3>
+                    <p data-i18n="tutStrategyText">Open Trader incluye 3 estrategias automáticas:</p>
+                    <ul>
+                        <li><strong>RSI:</strong> Mide si el activo está sobrecomprado o sobrevendido</li>
+                        <li><strong>MACD:</strong> Detecta cambios en la tendencia</li>
+                        <li><strong>Bollinger Bands:</strong> Identifica períodos de alta/baja volatilidad</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <strong data-i18n="tutConsensus">🎯 Consenso:</strong>
+                        <p data-i18n="tutConsensusDesc">Puedes exigir que 2 o 3 estrategias den la misma señal antes de operar. Más seguro pero menos operaciones.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 8: AI Agent -->
+                <div class="tutorial-step" data-step="8">
+                    <h3 data-i18n="tutAgentTitle">Paso 7: El Agente AI 🤖</h3>
+                    <p data-i18n="tutAgentText">El agente opera automáticamente por ti 24/7:</p>
+                    <ol style="padding-left:20px">
+                        <li data-i18n="tutAgent1">Configura tus preferencias (símbolos, riesgo)</li>
+                        <li data-i18n="tutAgent2">Opcional: Añade tu API key de Kimi para análisis mejorado</li>
+                        <li data-i18n="tutAgent3">Haz clic en "Iniciar Agente"</li>
+                        <li data-i18n="tutAgent4">El agente escaneará oportunidades y operará solo</li>
+                    </ol>
+                    <div class="highlight-box">
+                        <strong data-i18n="tutAgentTip">⚠️ Importante:</strong>
+                        <p data-i18n="tutAgentTipDesc">El agente opera con dinero ficticio (paper trading). Nunca arriesga dinero real.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 9: Done -->
+                <div class="tutorial-step" data-step="9">
+                    <h3 data-i18n="tutDoneTitle">🎉 ¡Listo para tradear!</h3>
+                    <p data-i18n="tutDoneText">Ya conoces lo básico. Recuerda:</p>
+                    <ul>
+                        <li data-i18n="tutTip1">✅ Empieza con operaciones pequeñas</li>
+                        <li data-i18n="tutTip2">✅ Usa siempre Stop Loss</li>
+                        <li data-i18n="tutTip3">✅ No operes con miedo ni codicia</li>
+                        <li data-i18n="tutTip4">✅ El paper trading es para aprender, no para ganar dinero real</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <strong data-i18n="tutFinal">🚀 Comienza tu viaje</strong>
+                        <p data-i18n="tutFinalDesc">Crea una cuenta, elige un par, y ejecuta tu primera operación. ¡Buena suerte!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tutorial-footer">
+                <div class="tutorial-progress" id="tutorialProgress">
+                    <div class="tutorial-dot active"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                </div>
+                <div class="tutorial-nav">
+                    <button class="btn" id="tutorialPrev" onclick="prevTutorialStep()" disabled>Anterior</button>
+                    <button class="btn btn-primary" id="tutorialNext" onclick="nextTutorialStep()">Siguiente</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script>
         // ===== i18n System =====
@@ -1213,7 +1541,22 @@
                 maxPositionUSD: 'Máx $/Posición', selectAccount: 'Seleccionar Cuenta',
                 noPositions: 'No hay posiciones abiertas',
                 noOrders: 'No hay órdenes pendientes',
-                noHistory: 'Aún no hay operaciones'
+                noHistory: 'Aún no hay operaciones',
+                tutorialTitle: 'Tutorial de Open Trader',
+                tutWelcomeTitle: '¡Bienvenido a Open Trader!',
+                tutWelcomeText: 'Tu plataforma de trading algorítmico con dinero ficticio pero precios reales.',
+                tutPaperTrading: '¿Qué es Paper Trading?',
+                tutPaperTradingDesc: 'Es una simulación de trading donde usas dinero ficticio ($10,000 por defecto) pero con precios del mercado real. Perfecto para practicar sin riesgo.',
+                tutAccountTitle: 'Paso 1: Crear tu Cuenta',
+                tutLongShortTitle: 'Paso 2: LONG vs SHORT',
+                tutChartTitle: 'Paso 3: Leer el Gráfico',
+                tutTradeTitle: 'Paso 4: Ejecutar tu Primera Operación',
+                tutRiskTitle: 'Paso 5: Gestión de Riesgo',
+                tutStrategyTitle: 'Paso 6: Estrategias Técnicas',
+                tutAgentTitle: 'Paso 7: El Agente AI',
+                tutDoneTitle: '¡Listo para tradear!',
+                apiKeySaved: '✓ API key guardada en el servidor',
+                apiKeyNotSaved: 'Sin guardar (solo en este dispositivo)'
             },
             en: {
                 tutorial: 'Tutorial', long: 'LONG', short: 'SHORT',
@@ -1231,7 +1574,22 @@
                 maxPositionUSD: 'Max $/Position', selectAccount: 'Select Account',
                 noPositions: 'No open positions',
                 noOrders: 'No pending orders',
-                noHistory: 'No trades yet'
+                noHistory: 'No trades yet',
+                tutorialTitle: 'Open Trader Tutorial',
+                tutWelcomeTitle: 'Welcome to Open Trader!',
+                tutWelcomeText: 'Your algorithmic trading platform with fake money but real prices.',
+                tutPaperTrading: 'What is Paper Trading?',
+                tutPaperTradingDesc: 'It\'s a trading simulation where you use fake money ($10,000 default) but with real market prices. Perfect for practicing without risk.',
+                tutAccountTitle: 'Step 1: Create Your Account',
+                tutLongShortTitle: 'Step 2: LONG vs SHORT',
+                tutChartTitle: 'Step 3: Reading the Chart',
+                tutTradeTitle: 'Step 4: Execute Your First Trade',
+                tutRiskTitle: 'Step 5: Risk Management',
+                tutStrategyTitle: 'Step 6: Technical Strategies',
+                tutAgentTitle: 'Step 7: The AI Agent',
+                tutDoneTitle: 'Ready to trade!',
+                apiKeySaved: '✓ API key saved on server',
+                apiKeyNotSaved: 'Not saved (device only)'
             }
         };
         
@@ -1889,13 +2247,217 @@
         }
         
         // ===== Tutorial =====
+        let tutorialStep = 1;
+        const totalSteps = 9;
+        
         function showTutorial() {
-            showToast('Tutorial coming soon!', 'info');
+            tutorialStep = 1;
+            document.getElementById('tutorialModal').classList.add('active');
+            updateTutorialUI();
+        }
+        
+        function closeTutorial() {
+            document.getElementById('tutorialModal').classList.remove('active');
+            // Mark tutorial as seen
+            if (currentAccount) {
+                saveConfig({ tutorial_seen: true });
+            }
+        }
+        
+        function nextTutorialStep() {
+            if (tutorialStep < totalSteps) {
+                tutorialStep++;
+                updateTutorialUI();
+            } else {
+                closeTutorial();
+            }
+        }
+        
+        function prevTutorialStep() {
+            if (tutorialStep > 1) {
+                tutorialStep--;
+                updateTutorialUI();
+            }
+        }
+        
+        function updateTutorialUI() {
+            // Update steps visibility
+            document.querySelectorAll('.tutorial-step').forEach((step, idx) => {
+                step.classList.toggle('active', idx + 1 === tutorialStep);
+            });
+            
+            // Update progress dots
+            document.querySelectorAll('.tutorial-dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', idx + 1 === tutorialStep);
+            });
+            
+            // Update buttons
+            document.getElementById('tutorialPrev').disabled = tutorialStep === 1;
+            document.getElementById('tutorialNext').textContent = 
+                tutorialStep === totalSteps ? (currentLang === 'es' ? 'Finalizar' : 'Finish') : 
+                (currentLang === 'es' ? 'Siguiente' : 'Next');
+        }
+        
+        // ===== User Config (Backend) =====
+        async function loadUserConfig() {
+            if (!currentAccount) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/config/${currentAccount}`);
+                if (!res.ok) return;
+                
+                const config = await res.json();
+                
+                // Apply loaded config
+                if (config.language) {
+                    currentLang = config.language;
+                    document.getElementById('langSelect').value = currentLang;
+                    localStorage.setItem('lang', currentLang);
+                }
+                
+                if (config.agent_preset) {
+                    setPreset(config.agent_preset);
+                }
+                
+                if (config.agent_symbols && config.agent_symbols.length > 0) {
+                    agentConfig.symbols = config.agent_symbols;
+                    // Update UI toggles
+                    document.querySelectorAll('#symbolToggles .toggle-btn').forEach(btn => {
+                        const symbol = btn.textContent + '/USDT';
+                        btn.classList.toggle('active', agentConfig.symbols.includes(symbol));
+                    });
+                }
+                
+                if (config.agent_strategies && config.agent_strategies.length > 0) {
+                    agentConfig.strategies = config.agent_strategies;
+                    // Update UI toggles
+                    document.querySelectorAll('#strategyToggles .toggle-btn').forEach(btn => {
+                        const strategy = btn.textContent.toLowerCase();
+                        btn.classList.toggle('active', agentConfig.strategies.includes(strategy));
+                    });
+                }
+                
+                if (config.agent_risk_config) {
+                    const r = config.agent_risk_config;
+                    document.getElementById('maxPosition').value = r.maxPosition || 1000;
+                    document.getElementById('maxPositions').value = r.maxPositions || 3;
+                    document.getElementById('maxDailyTrades').value = r.maxDailyTrades || 10;
+                    document.getElementById('consensusThreshold').value = r.consensus || 2;
+                    document.getElementById('stopLossPct').value = r.sl || 5;
+                    document.getElementById('takeProfitPct').value = r.tp || 10;
+                    document.getElementById('checkInterval').value = r.interval || 15;
+                }
+                
+                // Update API key status
+                updateApiKeyStatus(config.has_kimi_api_key);
+                
+                // Show tutorial if not seen
+                if (!config.tutorial_seen) {
+                    setTimeout(showTutorial, 1000);
+                }
+                
+            } catch (e) {
+                console.error('Load config error:', e);
+            }
+        }
+        
+        async function saveConfig(updates) {
+            if (!currentAccount) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/config/${currentAccount}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+                
+                if (!res.ok) {
+                    throw new Error('Failed to save config');
+                }
+                
+                return await res.json();
+            } catch (e) {
+                console.error('Save config error:', e);
+                throw e;
+            }
+        }
+        
+        function updateApiKeyStatus(hasKey) {
+            const statusEl = document.getElementById('apiKeyStatus');
+            if (!statusEl) return;
+            
+            if (hasKey) {
+                statusEl.textContent = t('apiKeySaved');
+                statusEl.className = 'api-key-status saved';
+            } else {
+                statusEl.textContent = t('apiKeyNotSaved');
+                statusEl.className = 'api-key-status unsaved';
+            }
+        }
+        
+        // Override saveAgentConfig to save to backend
+        async function saveAgentConfig() {
+            agentConfig.maxPosition = parseFloat(document.getElementById('maxPosition').value);
+            agentConfig.maxPositions = parseInt(document.getElementById('maxPositions').value);
+            agentConfig.maxDailyTrades = parseInt(document.getElementById('maxDailyTrades').value);
+            agentConfig.consensus = parseInt(document.getElementById('consensusThreshold').value);
+            agentConfig.sl = parseFloat(document.getElementById('stopLossPct').value);
+            agentConfig.tp = parseFloat(document.getElementById('takeProfitPct').value);
+            agentConfig.interval = parseInt(document.getElementById('checkInterval').value);
+            agentConfig.kimiApiKey = document.getElementById('kimiApiKey').value;
+            
+            // Save to localStorage as backup
+            localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+            
+            // Save to backend if account selected
+            if (currentAccount) {
+                try {
+                    const config = await saveConfig({
+                        kimi_api_key: agentConfig.kimiApiKey || undefined,
+                        use_kimi_api: !!agentConfig.kimiApiKey,
+                        agent_preset: agentConfig.preset,
+                        agent_symbols: agentConfig.symbols,
+                        agent_strategies: agentConfig.strategies,
+                        agent_risk_config: {
+                            maxPosition: agentConfig.maxPosition,
+                            maxPositions: agentConfig.maxPositions,
+                            maxDailyTrades: agentConfig.maxDailyTrades,
+                            consensus: agentConfig.consensus,
+                            sl: agentConfig.sl,
+                            tp: agentConfig.tp,
+                            interval: agentConfig.interval
+                        }
+                    });
+                    
+                    updateApiKeyStatus(config.has_kimi_api_key);
+                    showToast('Configuration saved to server', 'success');
+                    return;
+                } catch (e) {
+                    showToast('Saved locally only', 'warning');
+                    return;
+                }
+            }
+            
+            showToast('Configuration saved locally', 'success');
+        }
+        
+        // Override selectAccount to load config
+        async function selectAccount(id) {
+            if (!id) {
+                currentAccount = null;
+                document.getElementById('balanceDisplay').style.display = 'none';
+                return;
+            }
+            
+            currentAccount = id;
+            localStorage.setItem('currentAccount', id);
+            await loadAccountData(id);
+            await loadUserConfig(); // Load user config
         }
         
         // ===== Init =====
         document.addEventListener('DOMContentLoaded', () => {
-            // Load saved config
+            // Load saved config from localStorage as fallback
             const savedConfig = localStorage.getItem('agentConfig');
             if (savedConfig) {
                 try {

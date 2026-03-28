@@ -15,6 +15,10 @@ from ..services.agent_service import (
 )
 from ..services.paper_trading_service import PaperTradingService
 from ..services.market_multi import MultiMarketService
+from ..database import get_db
+from ..routers.user_config import get_decrypted_api_key
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
 
 router = APIRouter(prefix="/agent", tags=["AI Trading Agent"])
 
@@ -93,7 +97,8 @@ async def create_agent(
     agent_id: str,
     request: AgentCreateRequest,
     trading_service: PaperTradingService = Depends(get_trading_service),
-    market_service: MultiMarketService = Depends(get_market_service)
+    market_service: MultiMarketService = Depends(get_market_service),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Create and configure a new AI trading agent.
@@ -103,11 +108,21 @@ async def create_agent(
     - Execute trades automatically based on strategy consensus
     - Respect risk management settings
     - Optionally use Kimi API for enhanced analysis
+    
+    Note: If kimi_api_key is not provided but use_kimi_api is True,
+    the system will try to use the key stored in user configuration.
     """
     # Check if agent already exists and is running
     existing = get_agent(agent_id)
     if existing and existing.state.status == AgentStatus.RUNNING:
         raise HTTPException(400, f"Agent {agent_id} is already running. Stop it first.")
+    
+    # Get API key from user config if not provided in request
+    api_key = request.kimi_api_key
+    if request.use_kimi_api and not api_key:
+        api_key = await get_decrypted_api_key(request.account_id, db)
+        if api_key:
+            print(f"🔑 Using stored API key for account {request.account_id}")
     
     # Create config
     config = AgentConfig(
@@ -125,7 +140,7 @@ async def create_agent(
         stop_loss_pct=request.stop_loss_pct,
         take_profit_pct=request.take_profit_pct,
         use_kimi_api=request.use_kimi_api,
-        kimi_api_key=request.kimi_api_key,
+        kimi_api_key=api_key,
         kimi_confidence_threshold=request.kimi_confidence_threshold
     )
     

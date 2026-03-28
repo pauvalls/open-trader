@@ -106,6 +106,31 @@ class TradeJournal(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class UserConfig(Base):
+    """User configuration and settings - per account"""
+    __tablename__ = "user_config"
+    
+    account_id = Column(String, primary_key=True)
+    
+    # AI Agent settings
+    kimi_api_key_encrypted = Column(String, nullable=True)  # Encrypted API key
+    use_kimi_api = Column(Boolean, default=False)
+    
+    # Default agent settings (JSON)
+    agent_preset = Column(String, default="balanced")  # conservative, balanced, aggressive, ai
+    agent_symbols = Column(JSON, default=list)  # ["BTC/USDT", "ETH/USDT"]
+    agent_strategies = Column(JSON, default=list)  # ["rsi", "macd", "bollinger"]
+    agent_risk_config = Column(JSON, nullable=True)  # Full risk config object
+    
+    # UI preferences
+    language = Column(String, default="es")  # es, en
+    tutorial_seen = Column(Boolean, default=False)
+    
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 async def init_db():
     """Initialize database tables"""
     async with engine.begin() as conn:

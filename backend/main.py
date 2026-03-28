@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db
 from app.routers import (
     paper_trading, market_data, strategies, health, 
-    dashboard, advanced_orders, agent, websocket, export, journal, webhook
+    dashboard, advanced_orders, agent, websocket, export, journal, webhook, user_config
 )
 
 
@@ -64,6 +64,7 @@ app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
 app.include_router(export.router, prefix="/export", tags=["Export"])
 app.include_router(journal.router, prefix="/journal", tags=["Trading Journal"])
 app.include_router(webhook.router, prefix="/webhook", tags=["Webhooks"])
+app.include_router(user_config.router, prefix="/config", tags=["User Configuration"])
 
 
 @app.get("/")
