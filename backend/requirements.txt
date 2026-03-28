@@ -27,3 +27,4 @@ babel==2.14.0  # i18n support
 # Testing
 pytest==7.4.4
 pytest-asyncio==0.23.3
+pytest-cov==4.1.0
