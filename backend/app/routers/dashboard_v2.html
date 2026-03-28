@@ -450,6 +450,7 @@
             <button class="nav-tab" onclick="showTab('orders')">📜 Órdenes</button>
             <button class="nav-tab" onclick="showTab('history')">📊 Historial</button>
             <button class="nav-tab" onclick="showTab('analytics')">📉 Análisis</button>
+            <button class="nav-tab" onclick="showTab('agent')">🤖 Agente <span class="badge" id="agentBadge" style="display:none">ON</span></button>
         </div>
         
         <!-- Quick Stats -->
@@ -726,6 +727,168 @@
             </div>
         </div>
         
+        <!-- AI Agent Tab -->
+        <div id="agentTab" class="tab-content" style="display: none;">
+            <div class="main-grid">
+                <!-- Left: Agent Control -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🤖 Agente de Trading Automático</div>
+                        <div class="card-actions">
+                            <span id="agentStatusBadge" style="background: var(--bg-tertiary); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; color: var(--text-secondary);">⚪ Inactivo</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Preset Selection -->
+                        <div class="form-group">
+                            <label class="form-label">Perfil de Riesgo</label>
+                            <select class="form-select" id="agentPreset" onchange="loadPreset()">
+                                <option value="conservative">🛡️ Conservador - Bajo riesgo, pocas operaciones</option>
+                                <option value="balanced" selected>⚖️ Equilibrado - Riesgo moderado</option>
+                                <option value="aggressive">🚀 Agresivo - Más operaciones, más riesgo</option>
+                                <option value="ai-enhanced">🧠 AI Enhanced - Con análisis Kimi (lento)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Symbols Selection -->
+                        <div class="form-group">
+                            <label class="form-label">Pares a tradear</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" class="agent-symbol" value="ETH/USDT" checked> ETH/USDT
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" class="agent-symbol" value="BTC/USDT" checked> BTC/USDT
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" class="agent-symbol" value="SOL/USDT"> SOL/USDT
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" class="agent-symbol" value="AVAX/USDT"> AVAX/USDT
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" class="agent-symbol" value="ARB/USDT"> ARB/USDT
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" class="agent-symbol" value="OP/USDT"> OP/USDT
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Strategies -->
+                        <div class="form-group">
+                            <label class="form-label">Estrategias a usar</label>
+                            <div style="display: flex; gap: 15px;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" id="useRSI" checked> RSI
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" id="useMACD" checked> MACD
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" id="useBollinger" checked> Bollinger
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Risk Settings -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label class="form-label">Máx $ por posición</label>
+                                <input type="number" class="form-input" id="agentMaxPosition" value="1000" min="100" step="100">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Posiciones máx</label>
+                                <input type="number" class="form-input" id="agentMaxPositions" value="3" min="1" max="10">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label class="form-label">Stop Loss %</label>
+                                <input type="number" class="form-input" id="agentSL" value="5" min="1" max="50">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Take Profit %</label>
+                                <input type="number" class="form-input" id="agentTP" value="10" min="1" max="100">
+                            </div>
+                        </div>
+                        
+                        <!-- AI Key (optional) -->
+                        <div class="form-group" id="kimiKeyGroup" style="display: none;">
+                            <label class="form-label">Kimi API Key (opcional)</label>
+                            <input type="password" class="form-input" id="kimiApiKey" placeholder="sk-...">
+                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 5px;">
+                                Solo necesario para modo AI Enhanced. <a href="https://platform.moonshot.cn/" target="_blank" style="color: var(--accent-blue);">Obtener key →</a>
+                            </p>
+                        </div>
+                        
+                        <!-- Control Buttons -->
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button class="btn-long" id="startAgentBtn" onclick="startAgent()" style="flex: 1;">
+                                ▶️ Iniciar Agente
+                            </button>
+                            
+                            <button class="btn-short" id="stopAgentBtn" onclick="stopAgent()" style="flex: 1; display: none;">
+                                ⏹️ Detener
+                            </button>
+                        </div>
+                        
+                        <div class="help-text" style="margin-top: 15px;">
+                            💡 <strong>¿Cómo funciona?</strong> El agente escanea el mercado cada 15 minutos, 
+                            analiza las señales y ejecuta trades automáticamente si hay consenso entre las estrategias.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Agent Status & Logs -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📊 Estado del Agente</div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Status Grid -->
+                        <div class="stats-bar" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+                            <div class="stat-card">
+                                <div class="stat-label">Estado</div>
+                                <div class="stat-value neutral" id="agentStatusText">Inactivo</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-label">Último Scan</div>
+                                <div class="stat-value neutral" id="agentLastScan">--</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-label">Trades Hoy</div>
+                                <div class="stat-value neutral" id="agentTradesToday">0</div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-label">P&L Hoy</div>
+                                <div class="stat-value" id="agentDailyPnL">$0</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Decisions -->
+                        <h4 style="margin-bottom: 10px; font-size: 0.9rem; color: var(--text-secondary);">Últimas Decisiones</h4>
+                        
+                        <div id="agentDecisions" style="max-height: 300px; overflow-y: auto;">
+                            <div class="empty-state" style="padding: 20px;">
+                                <div class="empty-state-icon">🤖</div>
+                                <p>El agente aún no ha tomado decisiones</p>
+                                <p style="font-size: 0.75rem; margin-top: 5px;">
+                                    Inicia el agente para ver su actividad
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Logs -->
         <div class="card">
             <div class="card-header">
@@ -832,9 +995,34 @@
                         </ul>
                     </div>
                 </div>
+                
+                <!-- Step 7 -->
+                <div class="tutorial-step" data-step="7">
+                    <h3>🤖 Agente de Trading Automático</h3>
+                    <p>Open Trader tiene un <strong>agente AI</strong> que puede tradear por ti automáticamente:</p>
+                    
+                    <div class="tutorial-image">
+                        🤖 El agente escanea mercado → Analiza señales → Ejecuta trades
+                    </div>
+                    
+                    <p><strong>Cómo funciona:</strong></p>
+                    <ul style="padding-left: 20px; color: var(--text-secondary); margin: 10px 0;">
+                        <li>Elige un perfil de riesgo (Conservador, Equilibrado, Agresivo)</li>
+                        <li>Selecciona qué pares quieres tradear</li>
+                        <li>Configura Stop Loss y Take Profit automáticos</li>
+                        <li>El agente opera solo mientras tú haces otras cosas</li>
+                    </ul>
+                    
+                    <p style="margin-top: 15px;"><strong>🧠 Modo AI Enhanced:</strong> Con una API key de Kimi, el agente usa inteligencia artificial adicional para validar sus decisiones.</p>
+                    
+                    <div style="background: rgba(0, 212, 255, 0.1); border-left: 3px solid var(--accent-blue); padding: 12px; margin-top: 15px; border-radius: 0 8px 8px 0;">
+                        <p style="font-size: 0.85rem; margin: 0;">💡 <strong>Tip:</strong> Empieza en modo conservador y con poco capital por posición. Observa cómo se comporta antes de confiar más.</p>
+                    </div>
+                </div>
             </div>
             <div class="tutorial-progress">
                 <div class="tutorial-dot active"></div>
+                <div class="tutorial-dot"></div>
                 <div class="tutorial-dot"></div>
                 <div class="tutorial-dot"></div>
                 <div class="tutorial-dot"></div>
@@ -857,7 +1045,7 @@
         let priceChart = null;
         let logs = [];
         let tutorialStep = 1;
-        const totalSteps = 6;
+        const totalSteps = 7;
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -1385,6 +1573,281 @@
             document.getElementById('nextBtn').textContent = tutorialStep === totalSteps ? '¡Empezar!' : 'Siguiente';
         }
         
+        // ============ AI Trading Agent Functions ============
+        
+        let agentId = localStorage.getItem('openTraderAgentId') || null;
+        let agentInterval = null;
+        
+        // Presets configuration
+        const presets = {
+            conservative: {
+                consensus_threshold: 3,
+                max_position_size_usd: 500,
+                max_positions: 2,
+                max_daily_trades: 5,
+                stop_loss_pct: 3,
+                take_profit_pct: 6,
+                check_interval_minutes: 30
+            },
+            balanced: {
+                consensus_threshold: 2,
+                max_position_size_usd: 1000,
+                max_positions: 3,
+                max_daily_trades: 10,
+                stop_loss_pct: 5,
+                take_profit_pct: 10,
+                check_interval_minutes: 15
+            },
+            aggressive: {
+                consensus_threshold: 2,
+                max_position_size_usd: 2000,
+                max_positions: 5,
+                max_daily_trades: 20,
+                stop_loss_pct: 8,
+                take_profit_pct: 15,
+                check_interval_minutes: 10
+            },
+            'ai-enhanced': {
+                consensus_threshold: 2,
+                max_position_size_usd: 1000,
+                max_positions: 3,
+                max_daily_trades: 10,
+                stop_loss_pct: 5,
+                take_profit_pct: 10,
+                check_interval_minutes: 15,
+                use_kimi_api: true
+            }
+        };
+        
+        function loadPreset() {
+            const preset = document.getElementById('agentPreset').value;
+            const config = presets[preset];
+            
+            if (config) {
+                document.getElementById('agentMaxPosition').value = config.max_position_size_usd;
+                document.getElementById('agentMaxPositions').value = config.max_positions;
+                document.getElementById('agentSL').value = config.stop_loss_pct;
+                document.getElementById('agentTP').value = config.take_profit_pct;
+            }
+            
+            // Show/hide Kimi API key
+            const kimiGroup = document.getElementById('kimiKeyGroup');
+            kimiGroup.style.display = preset === 'ai-enhanced' ? 'block' : 'none';
+        }
+        
+        async function startAgent() {
+            if (!currentAccount) {
+                alert('Primero crea una cuenta');
+                return;
+            }
+            
+            // Generate agent ID
+            agentId = 'agent_' + currentAccount.slice(0, 8);
+            
+            // Get selected symbols
+            const symbolCheckboxes = document.querySelectorAll('.agent-symbol:checked');
+            const symbols = Array.from(symbolCheckboxes).map(cb => cb.value);
+            
+            if (symbols.length === 0) {
+                alert('Selecciona al menos un par para tradear');
+                return;
+            }
+            
+            // Build config
+            const preset = document.getElementById('agentPreset').value;
+            const config = {
+                account_id: currentAccount,
+                symbols: symbols,
+                timeframe: '1h',
+                check_interval_minutes: presets[preset]?.check_interval_minutes || 15,
+                use_rsi: document.getElementById('useRSI').checked,
+                use_macd: document.getElementById('useMACD').checked,
+                use_bollinger: document.getElementById('useBollinger').checked,
+                consensus_threshold: presets[preset]?.consensus_threshold || 2,
+                max_position_size_usd: parseFloat(document.getElementById('agentMaxPosition').value),
+                max_positions: parseInt(document.getElementById('agentMaxPositions').value),
+                max_daily_trades: presets[preset]?.max_daily_trades || 10,
+                stop_loss_pct: parseFloat(document.getElementById('agentSL').value),
+                take_profit_pct: parseFloat(document.getElementById('agentTP').value),
+                use_kimi_api: preset === 'ai-enhanced',
+                kimi_api_key: document.getElementById('kimiApiKey').value || null
+            };
+            
+            try {
+                // Create agent
+                const createRes = await fetch(`${API_BASE}/agent/create/${agentId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(config)
+                });
+                
+                if (!createRes.ok) {
+                    const err = await createRes.json();
+                    throw new Error(err.detail || 'Error creando agente');
+                }
+                
+                // Start agent
+                const startRes = await fetch(`${API_BASE}/agent/control/${agentId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'start'})
+                });
+                
+                if (!startRes.ok) {
+                    throw new Error('Error iniciando agente');
+                }
+                
+                // Save agent ID
+                localStorage.setItem('openTraderAgentId', agentId);
+                
+                // Update UI
+                updateAgentUI('running');
+                addLog('system', '🤖 Agente de trading iniciado');
+                
+                // Start polling
+                agentInterval = setInterval(pollAgentStatus, 30000);
+                
+            } catch (e) {
+                alert('Error: ' + e.message);
+                console.error(e);
+            }
+        }
+        
+        async function stopAgent() {
+            if (!agentId) return;
+            
+            try {
+                await fetch(`${API_BASE}/agent/control/${agentId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'stop'})
+                });
+                
+                // Update UI
+                updateAgentUI('idle');
+                addLog('system', '🛑 Agente de trading detenido');
+                
+                // Stop polling
+                if (agentInterval) {
+                    clearInterval(agentInterval);
+                    agentInterval = null;
+                }
+                
+            } catch (e) {
+                console.error('Error stopping agent:', e);
+            }
+        }
+        
+        function updateAgentUI(status) {
+            const badge = document.getElementById('agentStatusBadge');
+            const statusText = document.getElementById('agentStatusText');
+            const startBtn = document.getElementById('startAgentBtn');
+            const stopBtn = document.getElementById('stopAgentBtn');
+            const agentBadge = document.getElementById('agentBadge');
+            
+            if (status === 'running') {
+                badge.textContent = '🟢 Activo';
+                badge.style.background = 'rgba(16, 185, 129, 0.2)';
+                badge.style.color = 'var(--green)';
+                statusText.textContent = 'Activo';
+                statusText.className = 'stat-value positive';
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'block';
+                agentBadge.style.display = 'inline';
+            } else {
+                badge.textContent = '⚪ Inactivo';
+                badge.style.background = 'var(--bg-tertiary)';
+                badge.style.color = 'var(--text-secondary)';
+                statusText.textContent = 'Inactivo';
+                statusText.className = 'stat-value neutral';
+                startBtn.style.display = 'block';
+                stopBtn.style.display = 'none';
+                agentBadge.style.display = 'none';
+            }
+        }
+        
+        async function pollAgentStatus() {
+            if (!agentId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/agent/status/${agentId}`);
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                
+                // Update stats
+                document.getElementById('agentTradesToday').textContent = data.state?.trades_today || 0;
+                
+                const pnl = data.state?.daily_pnl || 0;
+                const pnlEl = document.getElementById('agentDailyPnL');
+                pnlEl.textContent = `${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)}`;
+                pnlEl.className = 'stat-value ' + (pnl >= 0 ? 'positive' : 'negative');
+                
+                // Update last scan
+                if (data.state?.last_check) {
+                    const lastScan = new Date(data.state.last_check);
+                    const diff = Math.floor((Date.now() - lastScan) / 60000);
+                    document.getElementById('agentLastScan').textContent = diff < 1 ? 'Ahora' : `${diff}m`;
+                }
+                
+                // Update recent decisions
+                if (data.recent_decisions && data.recent_decisions.length > 0) {
+                    updateAgentDecisions(data.recent_decisions);
+                }
+                
+            } catch (e) {
+                console.error('Error polling agent:', e);
+            }
+        }
+        
+        function updateAgentDecisions(decisions) {
+            const container = document.getElementById('agentDecisions');
+            
+            let html = '';
+            decisions.slice().reverse().forEach(d => {
+                const emoji = d.action === 'buy' ? '🟢' : d.action === 'sell' ? '🔴' : '⚪';
+                const time = new Date(d.timestamp).toLocaleTimeString();
+                
+                html += `
+                    <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem;"
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <strong>${emoji} ${d.symbol}</strong>
+                            <span style="color: var(--text-secondary); font-size: 0.75rem;">${time}</span>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">
+                            ${d.action.toUpperCase()} (${Math.round(d.confidence * 100)}% confianza)
+                        </div>
+                        <div style="font-size: 0.75rem; color: #666; margin-top: 4px;">${d.reason}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Check if agent was running on page load
+        async function checkAgentStatus() {
+            if (!agentId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/agent/status/${agentId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.is_running) {
+                        updateAgentUI('running');
+                        agentInterval = setInterval(pollAgentStatus, 30000);
+                        pollAgentStatus(); // Immediate update
+                    }
+                }
+            } catch (e) {
+                // Agent doesn't exist
+                localStorage.removeItem('openTraderAgentId');
+                agentId = null;
+            }
+        }
+        
+        // ============ End AI Agent Functions ============
+        
         // Mode toggle
         function setMode(mode) {
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
@@ -1409,6 +1872,10 @@
                 </div>
             `;
         }
+        
+        // Check agent status on load
+        checkAgentStatus();
+    </script>
     </script>
 </body>
 </html>
