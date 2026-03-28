@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db, UserConfig
 
-router = APIRouter(prefix="/config", tags=["User Configuration"])
+router = APIRouter(tags=["User Configuration"])
 
 
 # Simple encryption for API keys (in production, use proper key management)
@@ -75,6 +75,7 @@ class ApiKeyResponse(BaseModel):
 # ============ Endpoints ============
 
 @router.get("/{account_id}", response_model=UserConfigResponse)
+async def get_config(account_id: str, db: AsyncSession = Depends(get_db)):
 async def get_config(account_id: str, db: AsyncSession = Depends(get_db)):
     """
     Get user configuration for an account.
