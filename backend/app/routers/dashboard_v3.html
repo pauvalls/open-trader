@@ -1515,11 +1515,12 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label" data-i18n="amount">Amount</label>
+                            <label class="form-label" data-i18n="amountUSD">Amount (USD)</label>
                             <div class="input-group">
-                                <input type="number" class="form-input" id="amountInput" placeholder="0.00" step="0.01">
+                                <input type="number" class="form-input" id="amountInput" placeholder="100" step="1" min="1">
                                 <span class="input-addon">USD</span>
                             </div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="cryptoAmountPreview"></div>
                         </div>
                         
                         <div class="risk-calculator">
@@ -1969,7 +1970,7 @@
                 tutorial: 'Tutorial', long: 'LONG', short: 'SHORT',
                 trading: 'Trading', positions: 'Posiciones', orders: 'Órdenes',
                 history: 'Historial', agent: 'Agente AI', createNew: 'Crear Nueva',
-                amount: 'Cantidad', entryPrice: 'Precio Entrada',
+                amountUSD: 'Cantidad (USD)', amount: 'Cantidad', entryPrice: 'Precio Entrada',
                 stopLoss: 'Stop Loss', takeProfit: 'Take Profit',
                 riskReward: 'Riesgo/Beneficio', totalRisk: 'Riesgo Total',
                 executeLong: 'Ejecutar Long', executeShort: 'Ejecutar Short',
@@ -2060,7 +2061,7 @@
                 tutorial: 'Tutorial', long: 'LONG', short: 'SHORT',
                 trading: 'Trading', positions: 'Positions', orders: 'Orders',
                 history: 'History', agent: 'AI Agent', createNew: 'Create New',
-                amount: 'Amount', entryPrice: 'Entry Price',
+                amountUSD: 'Amount (USD)', amount: 'Amount', entryPrice: 'Entry Price',
                 stopLoss: 'Stop Loss', takeProfit: 'Take Profit',
                 riskReward: 'Risk/Reward', totalRisk: 'Total Risk',
                 executeLong: 'Execute Long', executeShort: 'Execute Short',
@@ -2320,11 +2321,22 @@
         document.getElementById('takeProfitPct').addEventListener('input', updateRiskCalc);
         
         function updateRiskCalc() {
-            const amount = parseFloat(document.getElementById('amountInput').value) || 0;
+            const amountUSD = parseFloat(document.getElementById('amountInput').value) || 0;
             const slPct = parseFloat(document.getElementById('stopLossPct')?.value) || 5;
             const tpPct = parseFloat(document.getElementById('takeProfitPct')?.value) || 10;
+            const symbol = document.getElementById('symbolSelect')?.value || 'ETH/USDT';
+            const baseSymbol = symbol.split('/')[0]; // ETH, BTC, etc.
             
-            if (currentPrice && amount) {
+            // Update crypto amount preview
+            const cryptoPreview = document.getElementById('cryptoAmountPreview');
+            if (currentPrice && amountUSD > 0) {
+                const cryptoAmount = amountUSD / currentPrice;
+                cryptoPreview.textContent = `≈ ${cryptoAmount.toFixed(6)} ${baseSymbol}`;
+            } else {
+                cryptoPreview.textContent = '';
+            }
+            
+            if (currentPrice && amountUSD > 0) {
                 const sl = orderSide === 'long' 
                     ? currentPrice * (1 - slPct/100) 
                     : currentPrice * (1 + slPct/100);
@@ -2336,7 +2348,7 @@
                 document.getElementById('calcSL').textContent = `$${sl.toFixed(2)}`;
                 document.getElementById('calcTP').textContent = `$${tp.toFixed(2)}`;
                 document.getElementById('calcRR').textContent = `1:${(tpPct/slPct).toFixed(1)}`;
-                document.getElementById('calcRisk').textContent = `$${(amount * slPct/100).toFixed(2)}`;
+                document.getElementById('calcRisk').textContent = `$${(amountUSD * slPct/100).toFixed(2)}`;
             } else {
                 document.getElementById('calcEntry').textContent = '-';
                 document.getElementById('calcSL').textContent = '-';
@@ -2353,13 +2365,14 @@
                 return;
             }
             
-            const amount = parseFloat(document.getElementById('amountInput').value);
-            if (!amount || amount <= 0) {
-                showToast('Enter a valid amount', 'error');
+            const amountUSD = parseFloat(document.getElementById('amountInput').value);
+            if (!amountUSD || amountUSD <= 0) {
+                showToast('Enter a valid amount in USD', 'error');
                 return;
             }
             
             const symbol = document.getElementById('symbolSelect').value;
+            const baseSymbol = symbol.split('/')[0];
             
             try {
                 const res = await fetch(`${API_BASE}/paper/order`, {
@@ -2369,14 +2382,16 @@
                         account_id: currentAccount,
                         symbol: symbol,
                         side: orderSide === 'long' ? 'buy' : 'sell',
-                        amount: amount
+                        amount_usd: amountUSD
                     })
                 });
                 
                 const data = await res.json();
                 
                 if (res.ok) {
-                    showToast('Order executed successfully', 'success');
+                    showToast(`${orderSide.toUpperCase()}: $${amountUSD} USD → ${data.crypto_amount?.toFixed(6) || '?'} ${baseSymbol}`, 'success');
+                    document.getElementById('amountInput').value = '';
+                    document.getElementById('cryptoAmountPreview').textContent = '';
                     loadAccountData(currentAccount);
                     loadPositions();
                 } else {

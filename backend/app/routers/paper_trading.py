@@ -27,7 +27,7 @@ class OrderRequest(BaseModel):
     account_id: str
     symbol: str  # ej: ETH/USDC
     side: str  # buy o sell
-    amount: float
+    amount_usd: float  # Amount in USD (e.g., 100 means buy $100 worth of crypto)
     order_type: str = "market"
 
 
@@ -157,15 +157,17 @@ async def create_order(
     if not price:
         raise HTTPException(status_code=400, detail=f"No se pudo obtener precio para {req.symbol}")
     
-    # Calcular valor y fee
-    order_value = req.amount * price
-    fee = order_value * 0.001  # 0.1% fee
-    total_cost = order_value + fee
+    # Calcular cantidad de crypto basada en USD
+    # req.amount_usd = 100 USD, price = 2000 USD/ETH -> crypto_amount = 0.05 ETH
+    amount_usd = req.amount_usd
+    crypto_amount = amount_usd / price
+    fee = amount_usd * 0.001  # 0.1% fee on USD amount
+    total_cost = amount_usd + fee
     
     # Verificar fondos suficientes
     if req.side == "buy":
         if account.current_balance_usd < total_cost:
-            raise HTTPException(status_code=400, detail="Fondos insuficientes")
+            raise HTTPException(status_code=400, detail=f"Fondos insuficientes. Necesitas ${total_cost:.2f} pero tienes ${account.current_balance_usd:.2f}")
         account.current_balance_usd -= total_cost
     else:
         # Verificar que tiene la posición para vender
@@ -177,8 +179,8 @@ async def create_order(
             )
         )
         position = pos_result.scalar_one_or_none()
-        if not position or position.amount < req.amount:
-            raise HTTPException(status_code=400, detail="No tienes suficiente posición para vender")
+        if not position or position.amount < crypto_amount:
+            raise HTTPException(status_code=400, detail=f"No tienes suficiente posición para vender. Tienes {position.amount if position else 0:.6f} pero necesitas {crypto_amount:.6f}")
     
     # Crear orden
     order = PaperOrder(
@@ -187,7 +189,7 @@ async def create_order(
         symbol=req.symbol,
         side=req.side,
         order_type=req.order_type,
-        amount=req.amount,
+        amount=crypto_amount,  # Store crypto amount
         price=price,
         fee=fee,
         executed_at=datetime.utcnow()
@@ -207,9 +209,9 @@ async def create_order(
         
         if position:
             # Averiguar precio promedio
-            total_amount = position.amount + req.amount
+            total_amount = position.amount + crypto_amount
             position.entry_price = (
-                (position.entry_price * position.amount) + (price * req.amount)
+                (position.entry_price * position.amount) + (price * crypto_amount)
             ) / total_amount
             position.amount = total_amount
         else:
@@ -218,7 +220,7 @@ async def create_order(
                 account_id=req.account_id,
                 symbol=req.symbol,
                 side="long",
-                amount=req.amount,
+                amount=crypto_amount,
                 entry_price=price
             )
             db.add(position)
@@ -235,11 +237,11 @@ async def create_order(
         
         if position:
             # Calcular P&L
-            pnl = (price - position.entry_price) * req.amount
+            pnl = (price - position.entry_price) * crypto_amount
             order.pnl = pnl
-            account.current_balance_usd += (order_value - fee)
+            account.current_balance_usd += (amount_usd - fee)
             
-            position.amount -= req.amount
+            position.amount -= crypto_amount
             if position.amount <= 0:
                 position.is_open = False
     
@@ -259,7 +261,8 @@ async def create_order(
         "order_id": order.id,
         "symbol": order.symbol,
         "side": order.side,
-        "amount": order.amount,
+        "amount_usd": amount_usd,
+        "crypto_amount": crypto_amount,
         "price": order.price,
         "fee": order.fee,
         "pnl": order.pnl,

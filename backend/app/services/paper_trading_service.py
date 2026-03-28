@@ -134,9 +134,16 @@ class PaperTradingService:
         account_id: str,
         symbol: str,
         side: str,
-        amount: float
+        amount_usd: float
     ) -> Dict[str, Any]:
-        """Create a paper trading order"""
+        """Create a paper trading order
+        
+        Args:
+            account_id: Account ID
+            symbol: Trading pair (e.g., ETH/USDT)
+            side: 'buy' or 'sell'
+            amount_usd: Amount in USD to trade (e.g., 100 means buy $100 worth of ETH)
+        """
         async with get_db() as db:
             # Get account
             result = await db.execute(
@@ -154,22 +161,23 @@ class PaperTradingService:
             if price <= 0:
                 raise ValueError(f"Could not get price for {symbol}")
             
-            amount_decimal = Decimal(str(amount))
-            total = price * amount_decimal
-            fee = total * Decimal("0.001")  # 0.1% fee
+            # Convert USD amount to crypto amount
+            amount_usd_decimal = Decimal(str(amount_usd))
+            crypto_amount = amount_usd_decimal / price  # e.g., $100 / $2000 = 0.05 ETH
+            fee = amount_usd_decimal * Decimal("0.001")  # 0.1% fee on USD amount
             
             if side == 'buy':
-                if account.current_balance_usd < total + fee:
-                    raise ValueError("Insufficient balance")
+                if account.current_balance_usd < amount_usd_decimal + fee:
+                    raise ValueError(f"Insufficient balance. Need ${float(amount_usd_decimal + fee):.2f} but have ${float(account.current_balance_usd):.2f}")
                 
-                account.current_balance_usd -= (total + fee)
+                account.current_balance_usd -= (amount_usd_decimal + fee)
                 
-                # Create position
+                # Create position with the calculated crypto amount
                 position = PaperPosition(
                     account_id=account_id,
                     symbol=symbol,
                     side='long',
-                    amount=amount_decimal,
+                    amount=crypto_amount,
                     entry_price=price,
                     unrealized_pnl=Decimal("0")
                 )
@@ -193,28 +201,34 @@ class PaperTradingService:
                 if position.side == 'short':
                     pnl = -pnl
                 
-                account.current_balance_usd += (total - fee)
+                # When selling, we receive the USD value minus fee
+                receive_usd = amount_usd_decimal - fee
+                account.current_balance_usd += receive_usd
                 account.unrealized_pnl += pnl
                 
                 # Remove position
                 await db.delete(position)
             
-            # Create order record
+            # Create order record (store both USD and crypto amounts)
             order = PaperOrder(
                 account_id=account_id,
                 symbol=symbol,
                 side=side,
-                amount=amount_decimal,
+                amount=crypto_amount,  # Amount in crypto
                 price=price,
                 fee=fee,
-                status='filled'
+                status='filled',
+                metadata_json={
+                    'amount_usd': float(amount_usd_decimal),
+                    'crypto_amount': float(crypto_amount)
+                }
             )
             db.add(order)
             await db.commit()
             
             # Send alert
             await alert_service.send_alert(
-                f"📝 Paper Trade: {side.upper()} {amount} {symbol} @ ${float(price):.2f}",
+                f"📝 Paper Trade: {side.upper()} ${amount_usd} of {symbol} = {float(crypto_amount):.6f} @ ${float(price):.2f}",
                 level='info'
             )
             
@@ -222,9 +236,10 @@ class PaperTradingService:
                 "id": order.id,
                 "symbol": symbol,
                 "side": side,
-                "amount": float(amount),
+                "amount_usd": float(amount_usd),
+                "crypto_amount": float(crypto_amount),
                 "price": float(price),
                 "fee": float(fee),
-                "total": float(total + fee),
+                "total": float(amount_usd_decimal + fee),
                 "status": "filled"
             }
