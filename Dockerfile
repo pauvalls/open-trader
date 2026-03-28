@@ -1,6 +1,7 @@
 # ============================================
 # Open Trader - Production Dockerfile
 # Multi-stage build for optimized image size
+# Version: 0.4.0 - AI Agent Edition
 # ============================================
 
 # Stage 1: Builder
@@ -18,8 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-# Force rebuild cache v0.4.0 - AI Agent Release
-RUN echo "Build version 0.4.0 - AI Agent" > /tmp/build_version
+# Force rebuild cache - timestamp: 2026-03-28-19-15
+RUN echo "Build version 0.4.0 - AI Agent - $(date)" > /tmp/build_version
 
 # Stage 2: Production
 FROM python:3.11-slim as production
@@ -39,7 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /root/.local /home/trader/.local
 ENV PATH=/home/trader/.local/bin:$PATH
 
-# Copy application code
+# Copy application code - Force rebuild on every change
 COPY backend/ .
 
 # Create data directory and set permissions
@@ -51,9 +52,9 @@ USER trader
 # Expose port
 EXPOSE 8000
 
-# Health check
+# Health check - updated for root dashboard
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health/ || exit 1
 
-# Run with production server (default port 8000 if PORT not set)
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2 --proxy-headers"]
+# Run with production server
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --proxy-headers"]
